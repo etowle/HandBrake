@@ -777,16 +777,18 @@ static void add_audio_for_lang(hb_value_array_t *list, const hb_dict_t *preset,
                                int behavior, int mode, hb_dict_t *track_dict)
 {
     hb_value_array_t * encoder_list = hb_dict_get(preset, "AudioList");
-    int count = hb_value_array_len(encoder_list);
+    int init_count = hb_value_array_len(encoder_list);
     int track = find_audio_track(title, lang, 0, behavior);
+
     while (track >= 0)
     {
         int track_count = hb_value_array_len(list);
+        int start = mode >= 2 && track_count ? init_count - 1 : 0;
+        int count = mode >= 1 && track_count ? 1 : init_count;
         char key[8];
 
-        count = mode && track_count ? 1 : count;
         int ii;
-        for (ii = 0; ii < count; ii++)
+        for (ii = start; ii < start + count; ii++)
         {
             // Create new audio output track settings
             hb_value_t *acodec_value;
@@ -1022,7 +1024,8 @@ int hb_preset_job_add_audio(hb_handle_t *h, int title_index,
     // Add tracks for all languages in the language list
     int mode;
     hb_value_array_t *lang_list = hb_dict_get(preset, "AudioLanguageList");
-    mode = hb_value_get_bool(hb_dict_get(preset, "AudioSecondaryEncoderMode"));
+    mode = 2 * hb_value_get_bool(hb_dict_get(preset, "AudioSecondaryLastEncoderMode"));
+    mode = mode ? mode : hb_value_get_bool(hb_dict_get(preset, "AudioSecondaryEncoderMode"));
     int count = hb_value_array_len(lang_list);
     int ii;
     for (ii = 0; ii < count; ii++)

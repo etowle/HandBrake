@@ -5265,6 +5265,24 @@ Each selected source track will be encoded with all selected encoders.</property
                 <signal name="toggled" handler="audio_def_widget_changed_cb" swapped="no"/>
               </object>
             </child>
+            <child>
+              <object class="GtkCheckButton" id="AudioSecondaryLastEncoderMode">
+                <property name="label" translatable="no">Use only last encoder for secondary audio</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="tooltip-text" translatable="no">Only the primary audio track will be encoded with the full encoder list.
+All other secondary audio output tracks will be encoded with last encoder only.</property>
+                <property name="halign">start</property>
+                <property name="active">True</property>
+                <property name="draw-indicator">True</property>
+                <signal name="toggled" handler="audio_def_widget_changed_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">3</property>
+              </packing>
+            </child>
           </object>
         </child>
       </object>
@@ -7009,4 +7027,5 @@ DRC allows you to &apos;compress&apos; the range by making loud sounds softer an
     </widgets>
   </object>
 </interface>
+
 

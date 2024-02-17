@@ -30,6 +30,7 @@
             }
         ],
         "AudioSecondaryEncoderMode": true,
+        "AudioSecondaryLastEncoderMode": false,
         "AudioTrackSelectionBehavior": "first",
         "ChapterMarkers": true,
         "ChildrenArray": [
