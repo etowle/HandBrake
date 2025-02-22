@@ -80,12 +80,12 @@ namespace HandBrakeWPF.Instance
             return null;
         }
 
-        public void StartScan(List<string> paths, int previewCount, TimeSpan minDuration, int titleIndex, List<string> fileExclusionList, int hwDecode)
+        public void StartScan(List<string> paths, int previewCount, TimeSpan minDuration, TimeSpan maxDuration, int titleIndex, List<string> fileExclusionList, int hwDecode, bool keepDuplicateTitles)
         {
             if (this.IsServerRunning())
             {
                 scanCompleteFired = false;
-                Thread thread1 = new Thread(() => RunScanInitProcess(paths, previewCount, minDuration, titleIndex, hwDecode));
+                Thread thread1 = new Thread(() => RunScanInitProcess(paths, previewCount, minDuration, maxDuration, titleIndex, hwDecode, keepDuplicateTitles));
                 thread1.Start();
             }
             else
@@ -118,7 +118,7 @@ namespace HandBrakeWPF.Instance
             return state;
         }
 
-        private void RunScanInitProcess(List<string> paths, int previewCount, TimeSpan minDuration, int titleIndex, int hwDecode)
+        private void RunScanInitProcess(List<string> paths, int previewCount, TimeSpan minDuration, TimeSpan maxDuration, int titleIndex, int hwDecode, bool keepDuplicateTitles)
         {
             if (this.IsServerRunning())
             {
@@ -132,12 +132,14 @@ namespace HandBrakeWPF.Instance
                     LogVerbosity = this.userSettingService.GetUserSetting<int>(UserSettingConstants.Verbosity),
                     Mode = 2,
                     ExcludeExtnesionList = this.userSettingService.GetUserSetting<List<string>>(UserSettingConstants.ExcludedExtensions),
-                    HwDecode = hwDecode
+                    HwDecode = hwDecode,
+                    KeepDuplicateTitles = keepDuplicateTitles
                 };
 
                 initCommand.LogFile = Path.Combine(initCommand.LogDirectory, string.Format("activity_log.worker.{0}.txt", GeneralUtilities.ProcessId));
 
-                string job = JsonSerializer.Serialize(new ScanCommand { InitialiseCommand = initCommand, Paths = paths, MinDuration = minDuration, PreviewCount = previewCount, TitleIndex = titleIndex}, JsonSettings.Options);
+                string job = JsonSerializer.Serialize(new ScanCommand { InitialiseCommand = initCommand, Paths = paths, MinDuration = minDuration, MaxDuration = maxDuration,
+                                                                          PreviewCount = previewCount, TitleIndex = titleIndex}, JsonSettings.Options);
 
                 var task = Task.Run(async () => await this.MakeHttpJsonPostRequest("StartScan", job));
                 task.Wait();

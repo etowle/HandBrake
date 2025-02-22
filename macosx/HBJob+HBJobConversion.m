@@ -154,6 +154,23 @@
     }
     job->multipass = self.video.multiPass;
 
+    switch (self.video.passthruHDRDynamicMetadata)
+    {
+        case HBVideoHDRDynamicMetadataPassthruOff:
+            job->passthru_dynamic_hdr_metadata = HB_HDR_DYNAMIC_METADATA_NONE;
+            break;
+        case HBVideoHDRDynamicMetadataPassthruHDR10Plus:
+            job->passthru_dynamic_hdr_metadata = HB_HDR_DYNAMIC_METADATA_HDR10PLUS;
+            break;
+        case HBVideoHDRDynamicMetadataPassthruDolbyVision:
+            job->passthru_dynamic_hdr_metadata = HB_HDR_DYNAMIC_METADATA_DOVI;
+            break;
+        case HBVideoHDRDynamicMetadataPassthruAll:
+        default:
+            job->passthru_dynamic_hdr_metadata = HB_HDR_DYNAMIC_METADATA_ALL;
+            break;
+    }
+
     if (hb_video_encoder_get_presets(self.video.encoder) != NULL)
     {
         // advanced x264/x265 options
@@ -280,29 +297,34 @@
                 // if we are getting the subtitles from an external file
                 if (subTrack.type == IMPORTSRT || subTrack.type == IMPORTSSA)
                 {
-                    hb_subtitle_config_t sub_config;
-                    int type = subTrack.type;
-
-                    sub_config.name = subTrack.title.UTF8String;
-                    sub_config.offset = subTrack.offset;
-
-                    // we need to strncpy file name and codeset
-                    sub_config.src_filename = subTrack.fileURL.fileSystemRepresentation;
-                    strncpy(sub_config.src_codeset, subTrack.charCode.UTF8String, 39);
-                    sub_config.src_codeset[39] = 0;
-
-                    if (!subTrack.burnedIn && hb_subtitle_can_pass(type, job->mux))
+                    if (subTrack.fileURL)
                     {
-                        sub_config.dest = PASSTHRUSUB;
-                    }
-                    else if (hb_subtitle_can_burn(type))
-                    {
-                        sub_config.dest = RENDERSUB;
-                    }
+                        hb_subtitle_config_t sub_config;
+                        sub_config.name = subTrack.title.UTF8String;
+                        sub_config.offset = subTrack.offset;
 
-                    sub_config.force = 0;
-                    sub_config.default_track = subTrack.def;
-                    hb_import_subtitle_add( job, &sub_config, subTrack.isoLanguage.UTF8String, type);
+                        // we need to strncpy file name and codeset
+                        sub_config.src_filename = subTrack.fileURL.fileSystemRepresentation;
+                        if (subTrack.charCode)
+                        {
+                            size_t len = sizeof(sub_config.src_codeset) - 1;
+                            strncpy(sub_config.src_codeset, subTrack.charCode.UTF8String, len);
+                            sub_config.src_codeset[len] = 0;
+                        }
+
+                        if (!subTrack.burnedIn && hb_subtitle_can_pass(subTrack.type, job->mux))
+                        {
+                            sub_config.dest = PASSTHRUSUB;
+                        }
+                        else if (hb_subtitle_can_burn(subTrack.type))
+                        {
+                            sub_config.dest = RENDERSUB;
+                        }
+
+                        sub_config.force = 0;
+                        sub_config.default_track = subTrack.def;
+                        hb_import_subtitle_add(job, &sub_config, subTrack.isoLanguage.UTF8String, subTrack.type);
+                    }
                 }
                 else
                 {
@@ -365,6 +387,10 @@
     {
         job->acodec_copy_mask |= HB_ACODEC_MP3_PASS;
     }
+    if (audioDefaults.allowVorbisPassthru)
+    {
+        job->acodec_copy_mask |= HB_ACODEC_VORBIS_PASS;
+    }
     if (audioDefaults.allowOpusPassthru)
     {
         job->acodec_copy_mask |= HB_ACODEC_OPUS_PASS;
@@ -372,6 +398,10 @@
     if (audioDefaults.allowTrueHDPassthru)
     {
         job->acodec_copy_mask |= HB_ACODEC_TRUEHD_PASS;
+    }
+    if (audioDefaults.allowALACPassthru)
+    {
+        job->acodec_copy_mask |= HB_ACODEC_ALAC_PASS;
     }
     if (audioDefaults.allowFLACPassthru)
     {

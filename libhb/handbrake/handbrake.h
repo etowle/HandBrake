@@ -1,6 +1,6 @@
 /* handbrake.h
 
-   Copyright (c) 2003-2024 HandBrake Team
+   Copyright (c) 2003-2025 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -43,18 +43,12 @@ char *        hb_dvd_name( char * path );
 void          hb_dvd_set_dvdnav( int enable );
 
 /* hb_scan()
-   Scan the specified path. Can be a DVD device, a VIDEO_TS folder or
+   Scan the specified paths. Can be a DVD device, a VIDEO_TS folder or
    a VOB file. If title_index is 0, scan all titles. */
-void          hb_scan( hb_handle_t *, const char * path,
-                       int title_index, int preview_count,
-                       int store_previews, uint64_t min_duration,
-                       int crop_auto_switch_threshold, int crop_median_threshold,
-                       hb_list_t * exclude_extensions, int hw_decode);
-                       
-void          hb_scan_list( hb_handle_t * h, hb_list_t * paths, int title_index,
-                      int preview_count, int store_previews, uint64_t min_duration,
+void          hb_scan( hb_handle_t * h, hb_list_t * paths, int title_index,
+                      int preview_count, int store_previews, uint64_t min_duration, uint64_t max_duration,
                       int crop_threshold_frames, int crop_threshold_pixels,
-                      hb_list_t * exclude_extensions, int hw_decode);
+                      hb_list_t * exclude_extensions, int hw_decode, int keep_duplicate_titles);
 
 void          hb_scan_stop( hb_handle_t * );
 void          hb_force_rescan( hb_handle_t * );
@@ -82,6 +76,8 @@ hb_buffer_t * hb_read_preview( hb_handle_t * h, hb_title_t *title,
                                int preview, int format );
 #endif // __LIBHB__
 
+hb_image_t  * hb_get_preview(hb_handle_t * h, hb_dict_t * job_dict,
+                             int picture, int rescale, int pix_fmt);
 hb_image_t  * hb_get_preview3(hb_handle_t * h, int picture,
                               hb_dict_t * job_dict);
 void          hb_rotate_geometry( hb_geometry_crop_t * geo,

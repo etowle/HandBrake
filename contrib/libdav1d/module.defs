@@ -1,9 +1,9 @@
 $(eval $(call import.MODULE.defs,LIBDAV1D,libdav1d))
 $(eval $(call import.CONTRIB.defs,LIBDAV1D))
 
-LIBDAV1D.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs2/dav1d-1.4.2.tar.bz2
-LIBDAV1D.FETCH.url    += https://code.videolan.org/videolan/dav1d/-/archive/1.4.2/dav1d-1.4.2.tar.bz2
-LIBDAV1D.FETCH.sha256  = 18d0c67421fac213b680a26856dd74ae7bb28b9ff59edd6f6580864d2b71d1ed
+LIBDAV1D.FETCH.url     = https://github.com/HandBrake/HandBrake-contribs/releases/download/contribs2/dav1d-1.5.1.tar.bz2
+LIBDAV1D.FETCH.url    += https://code.videolan.org/videolan/dav1d/-/archive/1.5.1/dav1d-1.5.1.tar.bz2
+LIBDAV1D.FETCH.sha256  = 4eddffd108f098e307b93c9da57b6125224dc5877b1b3d157b31be6ae8f1f093
 
 LIBDAV1D.build_dir     = build/
 

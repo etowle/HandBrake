@@ -1,6 +1,6 @@
 /* hb-backend.c
  *
- * Copyright (C) 2008-2024 John Stebbins <stebbins@stebbins>
+ * Copyright (C) 2008-2025 John Stebbins <stebbins@stebbins>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2,
@@ -2030,9 +2030,10 @@ preset_category_opts_set(signal_user_data_t *ud, const char *opt_name,
         const char * name;
         hb_value_t * folder = hb_value_array_get(presets, ii);
 
-        if (!hb_value_get_bool(hb_dict_get(folder, "Folder")))
+        if (!hb_value_get_bool(hb_dict_get(folder, "Folder")) ||
+            hb_value_get_int(hb_dict_get(folder, "Type")) != 1)
         {
-            // Only list folders
+            // Only list custom folders
             continue;
         }
 
@@ -2540,14 +2541,6 @@ video_tune_opts_set(signal_user_data_t *ud, const gchar *name,
     GtkComboBox *combo = GTK_COMBO_BOX(ghb_builder_widget(name));
     store = GTK_LIST_STORE(gtk_combo_box_get_model (combo));
     gtk_list_store_clear(store);
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter,
-                       0, _("None"),
-                       1, TRUE,
-                       2, "none",
-                       3, (gdouble)0,
-                       -1);
 
     for (ii = 0; ii < count; ii++)
     {
@@ -3545,12 +3538,12 @@ get_path_list(GListModel *files)
 }
 
 void
-ghb_backend_scan_list (GListModel *files, int titleindex, int preview_count, uint64_t min_duration)
+ghb_backend_scan_list (GListModel *files, int titleindex, int preview_count, uint64_t min_duration, uint64_t max_duration, gboolean keep_duplicate_titles)
 {
     hb_list_t *path_list = get_path_list(files);
     hb_list_t *extensions = ghb_get_excluded_extensions_list();
-    hb_scan_list(h_scan, path_list, titleindex, preview_count, 1, min_duration,
-                 0, 0, extensions, 0);
+    hb_scan(h_scan, path_list, titleindex, preview_count, 1, min_duration, max_duration,
+                 0, 0, extensions, 0, keep_duplicate_titles);
     ghb_free_list(path_list);
     ghb_free_list(extensions);
     hb_status.scan.state |= GHB_STATE_SCANNING;
@@ -3564,13 +3557,13 @@ ghb_backend_scan_list (GListModel *files, int titleindex, int preview_count, uin
 }
 
 void
-ghb_backend_scan (const char *path, int titleindex, int preview_count, uint64_t min_duration)
+ghb_backend_scan (const char *path, int titleindex, int preview_count, uint64_t min_duration, uint64_t max_duration, gboolean keep_duplicate_titles)
 {
     hb_list_t *path_list = hb_list_init();
     hb_list_add(path_list, (void *)path);
     hb_list_t *extensions = ghb_get_excluded_extensions_list();
-    hb_scan_list(h_scan, path_list, titleindex, preview_count, 1, min_duration,
-                 0, 0, extensions, 0);
+    hb_scan(h_scan, path_list, titleindex, preview_count, 1, min_duration, max_duration,
+                 0, 0, extensions, 0, keep_duplicate_titles);
     hb_list_close(&path_list);
     ghb_free_list(extensions);
     hb_status.scan.state |= GHB_STATE_SCANNING;
@@ -3581,19 +3574,6 @@ ghb_backend_scan (const char *path, int titleindex, int preview_count, uint64_t 
     hb_status.scan.preview_count = 1;
     hb_status.scan.preview_cur = 0;
     hb_status.scan.progress = 0;
-}
-
-void
-ghb_backend_queue_scan(const gchar *path, gint titlenum)
-{
-    ghb_log_func();
-    hb_list_t *extensions = ghb_get_excluded_extensions_list();
-    hb_list_t *path_list = hb_list_init();
-    hb_list_add(path_list, (void *)path);
-    hb_scan_list(h_queue, path_list, titlenum, -1, 0, 0, 0, 0, extensions, 0);
-    ghb_free_list(extensions);
-    hb_list_close(&path_list);
-    hb_status.queue.state |= GHB_STATE_SCANNING;
 }
 
 gint
@@ -4625,7 +4605,7 @@ ghb_validate_audio(GhbValue *settings, GtkWindow *parent)
             !(ghb_audio_can_passthru(aconfig->in.codec) &&
               (aconfig->in.codec & codec)))
         {
-            // Not supported.  AC3 is passthrough only, so input must be AC3
+            // Not supported.  AC3 is passthru only, so input must be AC3
             if (!ghb_question_dialog_run(parent, GHB_ACTION_NORMAL,
                     _("Continue"), _("Cancel"), _("Invalid Audio Selection"),
                     _("The source does not support Pass-Thru.\n\n"

@@ -81,6 +81,8 @@ namespace HandBrakeWPF.Services.Queue
             this.logInstanceManager = logInstanceManager;
             this.portService = portService;
 
+            this.logInstanceManager.SetQueue(this);
+
             // If this is the first instance, just use the main queue file, otherwise add the instance id to the filename.
             this.queueFile = string.Format("{0}{1}.json", QueueRecoveryHelper.QueueFileName, GeneralUtilities.ProcessId);
 
@@ -474,11 +476,6 @@ namespace HandBrakeWPF.Services.Queue
             }
         }
 
-        private void ActiveJob_JobFinished1(object sender, ActiveJobCompletedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         public void RestoreQueue(string importPath)
         {
             string appDataPath = DirectoryUtilities.GetUserStoragePath(HandBrakeVersionHelper.IsNightly());
@@ -747,7 +744,7 @@ namespace HandBrakeWPF.Services.Queue
             QueueTask job = this.GetNextJobForProcessing();
             if (job != null)
             {
-                if (job.IsBreakpointTask)
+                if (job.TaskType == QueueTaskType.Breakpoint)
                 {
                     this.HandleBreakPoint(job);
                     return;
@@ -907,7 +904,7 @@ namespace HandBrakeWPF.Services.Queue
 
         private void RemoveBreakPoints()
         {
-            List<QueueTask> tasks = this.queue.Where(t => t.IsBreakpointTask).ToList();
+            List<QueueTask> tasks = this.queue.Where(t => t.TaskType == QueueTaskType.Breakpoint).ToList();
             foreach (var task in tasks)
             {
                 this.queue.Remove(task);

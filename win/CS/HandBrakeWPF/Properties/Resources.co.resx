@@ -59,46 +59,46 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string"/>
-              <xsd:attribute name="type" type="xsd:string"/>
-              <xsd:attribute name="mimetype" type="xsd:string"/>
-              <xsd:attribute ref="xml:space"/>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string"/>
-              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
-              <xsd:attribute ref="xml:space"/>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required"/>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -137,9 +137,9 @@ E scale di x264 è x265 sò logaritmiche, è valori più chjuchi currispondenu �
 Dunque, chjuchi aumenti di valore aumentanu prugressivamente a dimensione di u schedariu d’esciuta.</value>
   </data>
   <data name="AddPreset_PictureSizeMode" xml:space="preserve">
-    <value>Pudete eventualmente allucà preferenze di fiura cù sta prerigatura. Ci hè 3 modi :
+    <value>Pudete eventualmente allucà parametri di fiura cù sta prerigatura. Ci hè 3 modi :
 
-Alcunu : E preferenze di fiurà ùn sò micca allucate cù sta prerigatura. À u caricamentu d’una fonte, e preferenze steranu tale quale in i cunfini di a risuluzione di a fonte. fQuessa affetta dinù Anamorficu, mudullu, inquadratura, ecc.
+Alcunu : I parametri di fiurà ùn sò micca allucate cù sta prerigatura. À u caricamentu d’una fonte, i parametri steranu tale quale in i cunfini di a risuluzione di a fonte. Quessa affetteghja dinù Anamorficu, mudullu, inquadratura, ecc.
 
 Persunalizatu : Pudete eventualmente definisce una larghezza è un’altezza massima. S’è vo fate què, a cudificazione serà inferiore o uguale à sti valori. L’ozzione « Cunservà e prupurzioni » serà autumaticamente attivata.
 
@@ -236,7 +236,7 @@ S’ella vi piace, pudete cunfigurà l’ozzioni di numinà autumaticamente i sc
     <value>Da veru, vulete mudificà a prerigatura selezziunata ?</value>
   </data>
   <data name="Main_PresetUpdated" xml:space="preserve">
-    <value>A prerigatura hè stata mudificata cù e vostre preferenze attuale.</value>
+    <value>A prerigatura hè stata mudificata cù i vostri parametri attuale.</value>
   </data>
   <data name="Main_PresetUpdateNotification" xml:space="preserve">
     <value>HandBrake hà determinatu chì e vostre prerigature integrate sò anticogne… Ste prerigature anu da esse rinnovate avà.
@@ -440,10 +440,6 @@ U ghjurnale d’attività puderia cuntene infurmazioni addiziunale.</value>
   <data name="OptionsViewModel_NewUpdate" xml:space="preserve">
     <value>Un rinnovu recente hè dispunibule ! Ci vole à cunsultà u situ web per fighjà e note di versione.</value>
   </data>
-  <data name="OptionsViewModel_64bitAvailable" xml:space="preserve">
-    <value>U vostru sistema accetta a versione 64bit d’HandBrake ! Sta versione permette perfurmenze è stabilità più belle chì a versione 32bit.
-    Ci vole à cunsultà u situ web per fighjà e note di versione.</value>
-  </data>
   <data name="OptionsViewModel_NoNewUpdates" xml:space="preserve">
     <value>À st’ora, ùn ci hè alcunu rinnovu recente.</value>
   </data>
@@ -620,22 +616,22 @@ Da veru, vulete impurtà i nomi di capitulu ?</value>
 U vostru schedariu di prerigatura hà da esse archiviatu è un novu hà da esse creatu. Duverete creà torna e vostre proprie prerigature.</value>
   </data>
   <data name="SettingService_SaveErrorReset" xml:space="preserve">
-    <value>Forse, tutte e preferenze chì vo avete cambiate duveranu esse rimesse d’origine à u prossimu lanciu d’HandBrake.</value>
+    <value>Forse, tutte i parametri chì vo avete cambiati duveranu esse reiniziati à u prossimu lanciu d’HandBrake.</value>
   </data>
   <data name="UserSettings_AnErrorOccurred" xml:space="preserve">
     <value>Un sbagliu hè accadutu pruvendu d’arregistrà e vostre preferenze.</value>
   </data>
   <data name="UserSettings_YourSettingsHaveBeenReset" xml:space="preserve">
-    <value>Avertimentu : e vostre preferenze sò state rimesse d’origine !</value>
+    <value>Avertimentu : i vostri parametri sò stati reiniziati !</value>
   </data>
   <data name="UserSettings_YourSettingsAreCorrupt" xml:space="preserve">
-    <value>U vostru schedariu di preferenze persunalizate era inaccessibile o alteratu. E preferenze sò state rimesse à i so valori d’origine.</value>
+    <value>U vostru schedariu di parametri persunalizati era alteratu o inaccessibile. I parametri sò stati rimessi à i so valori d’origine.</value>
   </data>
   <data name="UserSettings_UnableToLoad" xml:space="preserve">
-    <value>Impussibule di caricà u schedariu di e preferenze persunalizate : {0}</value>
+    <value>Impussibule di caricà u schedariu di i parametri persunalizati : {0}</value>
   </data>
   <data name="UserSettings_UnableToLoadSolution" xml:space="preserve">
-    <value>U vostru schedariu di preferenze persunalizate pare esse inaccessibile o alteratu. Forse, duverete squassà u schedariu è lascià HandBrake creane un novu.</value>
+    <value>U vostru schedariu di parametri persunalizati pare esse inaccessibile o alteratu. Forse, duverete squassà u schedariu è lascià HandBrake creane un novu.</value>
   </data>
   <data name="Main_NoPermissionsOrMissingDirectory" xml:space="preserve">
     <value>U cartulare d’esciuta chì vo avete sceltu ùn esiste micca, o ùn avete micca u permessu di scriveci schedarii.</value>
@@ -1010,7 +1006,7 @@ Indiziu : Ciò ch’ella ci vole à fà in casu di rimpiazzamentu di schedariu p
     <value>Ozzioni</value>
   </data>
   <data name="MainView_OutputSettings" xml:space="preserve">
-    <value>Preferenze d’esciuta</value>
+    <value>Parametri d’esciuta</value>
   </data>
   <data name="MainView_Pause" xml:space="preserve">
     <value>Pausa</value>
@@ -1037,7 +1033,7 @@ Indiziu : Ciò ch’ella ci vole à fà in casu di rimpiazzamentu di schedariu p
     <value>Cudificazione : {0}, {1:00.00}%, Tempu rimanente : {2}, {3}</value>
   </data>
   <data name="MainView_Range" xml:space="preserve">
-    <value>Stesa :</value>
+    <value>Intervallu :</value>
   </data>
   <data name="MainView_Reload" xml:space="preserve">
     <value>Ricaricà</value>
@@ -1117,14 +1113,8 @@ Indiziu : Ciò ch’ella ci vole à fà in casu di rimpiazzamentu di schedariu p
   <data name="MetaDataView_Title" xml:space="preserve">
     <value>Metadati</value>
   </data>
-  <data name="OptionsView_EnableNvencEncoding" xml:space="preserve">
-    <value>Permette l’adopru di i cudificatori Nvidia NVENC</value>
-  </data>
-  <data name="OptionsView_EnableQuicksyncEncoding" xml:space="preserve">
-    <value>Permette l’adopru di i cudificatori Intel QuickSync</value>
-  </data>
-  <data name="OptionsView_EnableVceEncoding" xml:space="preserve">
-    <value>Permette l’iusu di i cudificatori VCN d’AMD</value>
+  <data name="OptionsView_EnableDirectXDecoding" xml:space="preserve">
+    <value>Permette l’adopru di a discudificazione DirectX</value>
   </data>
   <data name="OptionsView_InvalidFileFormatChars" xml:space="preserve">
     <value>U furmatu di schedariu pruvistu cuntene caratteri inaccettevule. Quelli sò stati cacciati. </value>
@@ -1222,6 +1212,9 @@ Indiziu : Ciò ch’ella ci vole à fà in casu di rimpiazzamentu di schedariu p
   <data name="Options_MinTitleScanLength" xml:space="preserve">
     <value>Durata minima in seconde di i tituli DVD è Blu-ray. I tituli più corti seranu tralasciati :</value>
   </data>
+  <data name="Options_KeepDuplicateTitles" xml:space="preserve">
+    <value>Cunservà i tituli in duppione nant’à e fonti Blu-ray (richiede un rilanciu)</value>
+  </data>
   <data name="Options_MP4FileExtension" xml:space="preserve">
     <value>Estensione di schedariu MP4 :</value>
   </data>
@@ -1296,7 +1289,7 @@ VLC è MPC-HC sò accettati. D’altri lettori ponu dinù funziunà ma ùn sò m
     <value>Quandu hè compiu</value>
   </data>
   <data name="Options_x264" xml:space="preserve">
-    <value>Preferenze x264/5</value>
+    <value>Parametri x264/5</value>
   </data>
   <data name="Options_x264Granularity" xml:space="preserve">
     <value>Granularità frazziunale di qualità custente :</value>
@@ -1437,7 +1430,7 @@ VLC è MPC-HC sò accettati. D’altri lettori ponu dinù funziunà ma ùn sò m
     <value>Durata di l’interruzzione :</value>
   </data>
   <data name="QueueView_PictureSettings" xml:space="preserve">
-    <value>Preferenze di fiura :</value>
+    <value>Parametri di fiura :</value>
   </data>
   <data name="WhenDone_QuitHandBrake" xml:space="preserve">
     <value>Piantà Handbrake</value>
@@ -1710,7 +1703,7 @@ VLC è MPC-HC sò accettati. D’altri lettori ponu dinù funziunà ma ùn sò m
     <value>Aghjunghje una traccia</value>
   </data>
   <data name="AudioDefaultsView_AutoAddTracks" xml:space="preserve">
-    <value>Preferenze di u cudificatore audio per ogni traccia scelta :</value>
+    <value>Parametri di u cudificatore audio per ogni traccia scelta :</value>
   </data>
   <data name="AudioDefaultsView_Clear" xml:space="preserve">
     <value>Squassà</value>
@@ -1832,7 +1825,7 @@ VLC è MPC-HC sò accettati. D’altri lettori ponu dinù funziunà ma ùn sò m
 Què ùn affetterà micca i cudificatori d’appiecazione.</value>
   </data>
   <data name="Main_PleaseFixSubtitleSettings" xml:space="preserve">
-    <value>Ci vole à currege e vostre preferenze nanzu di cuntinuà. </value>
+    <value>Ci vole à currege i vostri parametri nanzu di cuntinuà. </value>
   </data>
   <data name="Generic_Apply" xml:space="preserve">
     <value>Affettà</value>
@@ -1906,13 +1899,13 @@ Pudete sguillà è depone o stampittà u testu insù.</value>
     <value>Numeru à a fine</value>
   </data>
   <data name="FiltersViewAuto_DeblockPreset" xml:space="preserve">
-    <value>VistaFiltri_PrerigaturaSblucchime</value>
+    <value>FiltersView_DeblockPreset</value>
   </data>
   <data name="FiltersViewAuto_DeblockTune" xml:space="preserve">
     <value>Rigatura di sblucchime</value>
   </data>
-  <data name="OptionsView_ChoiceOfEncoderHint" xml:space="preserve">
-    <value>A scelta di u cudificatore serà dispunibule in l’unghjetta « Video ».</value>
+  <data name="OptionsView_EncodeNotes" xml:space="preserve">
+    <value>Nota : Micca tutti i cudificatori di materiale anu preferenze addiziunale. Tutti i cudificatori di materiale dispunibule è accettati nant’à stu sistema seranu dispunibule per esse selezziunati via a lista sbucinante di u cudificatore video chì si trova nant’à l’unghjetta video.</value>
   </data>
   <data name="Queue_RecoverQueueQuestionPlural" xml:space="preserve">
     <value>HandBrake hà trovu parechji schedarii di fila d’attesa micca compii. Quelli venenu da parechje instanze d’HandBrake. Vulete ricuperà tutti sti travagli micca compii ?</value>
@@ -2127,7 +2120,7 @@ Induve hè accettatu, tutte e prerigature persunalizate seranu state impurtate.<
     <value>Sempre impiegà u chjassu predefinitu per ogni novu nome ingeneratu.</value>
   </data>
   <data name="OptionsView_RemotePortLimit" xml:space="preserve">
-    <value>A stesa di porti deve esse scelta trà 5000 è 32767</value>
+    <value>L’intervallu di porti deve esse sceltu trà 5000 è 32767</value>
   </data>
   <data name="SourceSelection_UpdateAvailable" xml:space="preserve">
     <value>Una nova versione hè dispunibule !</value>
@@ -2192,10 +2185,10 @@ Ci vole à sceglie una prerigatura sfarente.</value>
     <value>Listessa chì a fonte</value>
   </data>
   <data name="OptionsViewModel_ResetHandBrake" xml:space="preserve">
-    <value>Reinizializazione di e preferenze</value>
+    <value>Reinizializazione di i parametri</value>
   </data>
   <data name="OptionsViewModel_ResetHandBrakeQuestion" xml:space="preserve">
-    <value>Da veru, vulete reinizià e preferenze d’HandBrake à i so valori predefiniti ?</value>
+    <value>Da veru, vulete reinizià i parametri d’HandBrake à i so valori predefiniti ?</value>
   </data>
   <data name="PaddingMode_Custom" xml:space="preserve">
     <value>Persunalizatu (Micca ristrintu)</value>
@@ -2297,7 +2290,7 @@ Ci vole à sceglie una prerigatura sfarente.</value>
     <value>Piantà</value>
   </data>
   <data name="String1" xml:space="preserve">
-    <value/>
+    <value />
   </data>
   <data name="PresetService_CategoryAlreadyExists" xml:space="preserve">
     <value>U nome di categuria scrittu esiste dighjà. Ci vole à sceglie un nome sfarente.</value>
@@ -2318,7 +2311,7 @@ Ci vole à sceglie una prerigatura sfarente.</value>
     <value>Livellu quandu l’alerte nant’à u spaziu discu debule s’affissenu :</value>
   </data>
   <data name="OptionsView_SimultaneousHardwareLimitNotice" xml:space="preserve">
-    <value>Nota : Ghjè a limitazione alta di i travagli simultanei. Certe limitazioni materiale ponu fà diminuisce u numeru attuale di travagli simultanei durante a cudificazione. E preferenze seranu pigliate in contu à u prossimu trattamentu da lottu di a fila d’attesa o à u rilanciu di l’appiecazione.</value>
+    <value>Nota : Ghjè a limitazione alta di i travagli simultanei. Certe limitazioni materiale ponu fà diminuisce u numeru attuale di travagli simultanei durante a cudificazione. U parametru serà pigliatu in contu à u prossimu trattamentu da lottu di a fila d’attesa o à u rilanciu di l’appiecazione.</value>
   </data>
   <data name="Preset_NotAvailable" xml:space="preserve">
     <value>(Micca dispunibule)</value>
@@ -2333,7 +2326,7 @@ Ci vole à sceglie una prerigatura sfarente.</value>
     <value>Sì</value>
   </data>
   <data name="StaticPreviewView_FineTuning" xml:space="preserve">
-    <value>Preferenze di rigatura fina di a fiura</value>
+    <value>Parametri di rigatura fina di a fiura</value>
   </data>
   <data name="StaticPreviewView_ShowPictureSettingsAdjustment" xml:space="preserve">
     <value>Affissà e cumande di rigatura di l’inquadratura.</value>
@@ -2378,7 +2371,7 @@ Ci vole à sceglie una prerigatura sfarente.</value>
     <value>Compiu</value>
   </data>
   <data name="QueueView_JobStatus_InitFailed" xml:space="preserve">
-    <value>Preferenze inaccettevule. Verificate u ghjurnale per sapene di più.</value>
+    <value>Parametri inaccettevule. Verificate u ghjurnale per sapene di più.</value>
   </data>
   <data name="QueueView_JobStatus_InvalidInput" xml:space="preserve">
     <value>Intrata inaccettevule. Verificate u ghjurnale per sapene di più.</value>
@@ -2520,13 +2513,13 @@ Pudete cambià a vostra scelta à ogni mumentu cambiendu l’ozzioni in Preferen
     <value>(E prerigature di l’utilizatore ùn seranu micca reiniziate)</value>
   </data>
   <data name="OptionsView_ResetSettingsToDefaults" xml:space="preserve">
-    <value>Reinizià tutte e prerigature HandBrake à e so predefinizioni d’origine :</value>
+    <value>Reinizià tutti i parametri HandBrake à e so predefinizioni d’origine :</value>
   </data>
   <data name="Options_BuiltInPresets" xml:space="preserve">
     <value>Prerigature integrate</value>
   </data>
   <data name="Options_UserSettings" xml:space="preserve">
-    <value>Preferenze d’utilizatore</value>
+    <value>Parametri d’utilizatore</value>
   </data>
   <data name="PresetDisplayMode_FloatingPanel" xml:space="preserve">
     <value>Arburiscenza undighjante</value>
@@ -2557,7 +2550,7 @@ Solu i schedarii di fila d’attesa da a versione attuale sò accettati.</value>
     <value>Disinstallatu</value>
   </data>
   <data name="OptionsView_UninstallMessageBoxText" xml:space="preserve">
-    <value>E preferenze di nutificazione sò state cacciate.</value>
+    <value>I parametri di nutificazione sò stati cacciati.</value>
   </data>
   <data name="OptionsView_UninstallToast" xml:space="preserve">
     <value>Squassà è disinstallà</value>
@@ -2813,5 +2806,135 @@ Per permette parechje cudificazioni simultanee, attivate st’ozzione in u listi
   </data>
   <data name="VideoView_LosslessEncodeOnly" xml:space="preserve">
     <value>Solu cudificazione senza perdita.</value>
+  </data>
+  <data name="MainView_HideClassicMenu" xml:space="preserve">
+    <value>Piattà u listinu classicu</value>
+  </data>
+  <data name="MainView_ShowClassicMenu" xml:space="preserve">
+    <value>Affissà u listinu classicu</value>
+  </data>
+  <data name="OptionsViewVideo_UnsupportedIntelDriver" xml:space="preserve">
+    <value>(Avertimentu : Scuperta d’un pilotu micca accettatu ; messa à livellu ricumandata)</value>
+  </data>
+  <data name="QueueSelectionView_RangeLimits" xml:space="preserve">
+    <value>Cunfine d’intervallu :</value>
+  </data>
+  <data name="QueueSelectionView_RangeLimitsDesc" xml:space="preserve">
+    <value>Limità a longhezza di i tituli aghjunti à a fila d’attesa.</value>
+  </data>
+  <data name="QueueSelectionView_RangeLimitsEnable" xml:space="preserve">
+    <value>Attivà e cunfine d’intervallu</value>
+  </data>
+  <data name="AddToQueue_RangeLimitError" xml:space="preserve">
+    <value>Certi tituli puderianu ùn esse micca aghjunti à a fila d’attesa per via ch’elli sianu fora di e cunfine d’intervallu scelte.</value>
+  </data>
+  <data name="QueueView_StartAtTime" xml:space="preserve">
+    <value>Principià dopu</value>
+  </data>
+  <data name="QueueView_QueueStartTime" xml:space="preserve">
+    <value>Ora di principiu :</value>
+  </data>
+  <data name="QueueView_EncodeShutdown" xml:space="preserve">
+    <value>Interruzzione di a cudificazione…</value>
+  </data>
+  <data name="PictureSettingsView_AllowUpscaling" xml:space="preserve">
+    <value>Permette a culata in gamma</value>
+  </data>
+  <data name="PictureSettingsView_OptimalSize" xml:space="preserve">
+    <value>Dimensione ottimale</value>
+  </data>
+  <data name="OptionsView_Available" xml:space="preserve">
+    <value>Dispunibule nant’à stu sistema.</value>
+  </data>
+  <data name="OptionsView_NotAvailable" xml:space="preserve">
+    <value>Micca dispunibule nant’à stu sistema.</value>
+  </data>
+  <data name="MainView_ScanningStatus" xml:space="preserve">
+    <value>Aspittate per piacè…</value>
+  </data>
+  <data name="MainView_Cancel" xml:space="preserve">
+    <value>Abbandunà</value>
+  </data>
+  <data name="MainView_OpenLog" xml:space="preserve">
+    <value>Apre a finestra di l’attività</value>
+  </data>
+  <data name="OptionsView_EnableNvencEncoding" xml:space="preserve">
+    <value />
+  </data>
+  <data name="OptionsView_EnableQuicksyncEncoding" xml:space="preserve">
+    <value />
+  </data>
+  <data name="OptionsView_EnableVceEncoding" xml:space="preserve">
+    <value />
+  </data>
+  <data name="OptionsView_ChoiceOfEncoderHint" xml:space="preserve">
+    <value />
+  </data>
+  <data name="AnamorphicMode_Custom" xml:space="preserve">
+    <value>Persunalizata</value>
+  </data>
+  <data name="AnamorphicMode_None" xml:space="preserve">
+    <value>Nisuna</value>
+  </data>
+  <data name="AnamorphicMode_Automatic" xml:space="preserve">
+    <value>Autumatica</value>
+  </data>
+  <data name="CombDetect_Off" xml:space="preserve">
+    <value>Nò</value>
+  </data>
+  <data name="CombDetect_Custom" xml:space="preserve">
+    <value>Persunalizata</value>
+  </data>
+  <data name="CombDetect_Default" xml:space="preserve">
+    <value>Predefinitu</value>
+  </data>
+  <data name="DeinterlaceFilter_Off" xml:space="preserve">
+    <value>Nò</value>
+  </data>
+  <data name="Denoise_Off" xml:space="preserve">
+    <value>Nò</value>
+  </data>
+  <data name="Detelecine_Off" xml:space="preserve">
+    <value>Nò</value>
+  </data>
+  <data name="Detelecine_Default" xml:space="preserve">
+    <value>Predefinitu</value>
+  </data>
+  <data name="Detelecine_Custom" xml:space="preserve">
+    <value>Persunalizata</value>
+  </data>
+  <data name="Sharpen_Off" xml:space="preserve">
+    <value>Nò</value>
+  </data>
+  <data name="Options_MaxTitleScanDuration" xml:space="preserve">
+    <value>Durata massima in seconde di i tituli DVD è Blu-ray. I tituli più longhi seranu tralasciati :</value>
+  </data>
+  <data name="DefaultRangeMode_Chapters" xml:space="preserve">
+    <value>Capituli</value>
+  </data>
+  <data name="DefaultRangeMode_Seconds" xml:space="preserve">
+    <value>Seconde</value>
+  </data>
+  <data name="DefaultRangeMode_Frames" xml:space="preserve">
+    <value>Fiure</value>
+  </data>
+  <data name="Options_RangeModeSelection" xml:space="preserve">
+    <value>Default Range Mode for Titles:</value>
+  </data>
+  <data name="WhenDone_CustomAction" xml:space="preserve">
+    <value>Custom Action</value>
+  </data>
+  <data name="OptionsView_CustomActionConfig" xml:space="preserve">
+    <value>'Custom Action' Configuration:</value>
+  </data>
+  <data name="MainView_OpenAutonamePreferences" xml:space="preserve">
+    <value>Open Autoname Preferences</value>
+  </data>
+  <data name="Options_RunAction" xml:space="preserve">
+    <value>Run Script / Executable: </value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="OptionsViewModel_PortableMode" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
   </data>
 </root>

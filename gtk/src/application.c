@@ -1,6 +1,6 @@
 /* application.c
  *
- * Copyright (C) 2008-2024 John Stebbins <stebbins@stebbins>
+ * Copyright (C) 2008-2025 John Stebbins <stebbins@stebbins>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2,
@@ -392,7 +392,6 @@ GHB_DECLARE_ACTION_CB(queue_open_log_dir_action_cb);
 GHB_DECLARE_ACTION_CB(queue_open_log_action_cb);
 GHB_DECLARE_ACTION_CB(queue_delete_all_action_cb);
 GHB_DECLARE_ACTION_CB(queue_delete_complete_action_cb);
-GHB_DECLARE_ACTION_CB(queue_delete_action_cb);
 GHB_DECLARE_ACTION_CB(queue_reset_fail_action_cb);
 GHB_DECLARE_ACTION_CB(queue_reset_all_action_cb);
 GHB_DECLARE_ACTION_CB(queue_reset_action_cb);
@@ -469,7 +468,6 @@ map_actions (GtkApplication *app, signal_user_data_t *ud)
         { "queue-reset-fail",      queue_reset_fail_action_cb      },
         { "queue-reset-all",       queue_reset_all_action_cb       },
         { "queue-reset",           queue_reset_action_cb           },
-        { "queue-delete",          queue_delete_action_cb          },
         { "queue-delete-complete", queue_delete_complete_action_cb },
         { "queue-delete-all",      queue_delete_all_action_cb      },
         { "queue-export",          queue_export_action_cb          },
@@ -995,8 +993,8 @@ ghb_application_handle_local_options (GApplication *app, GVariantDict *options)
     {
         // Non-console windows apps do not have a stderr->_file
         // assigned properly
-        stderr->_file = STDERR_FILENO;
-        stdout->_file = STDOUT_FILENO;
+        (void) freopen("NUL", "w", stderr);
+        (void) freopen("NUL", "w", stdout);
     }
 #else
     redirect_io = FALSE;

@@ -1,6 +1,6 @@
 /* hb.c
 
-   Copyright (c) 2003-2024 HandBrake Team
+   Copyright (c) 2003-2025 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -353,20 +353,6 @@ void hb_remove_previews( hb_handle_t * h )
     closedir( dir );
 }
 
-void hb_scan( hb_handle_t * h, const char * path, int title_index,
-              int preview_count, int store_previews, uint64_t min_duration,
-              int crop_threshold_frames, int crop_threshold_pixels,
-              hb_list_t * exclude_extensions, int hw_decode)
-{
-    // TODO: Compatibility later for the other UI's.  Remove when they are updated.
-    hb_list_t *file_paths = hb_list_init();
-    hb_list_add(file_paths, (char *)path);
-
-    hb_scan_list(h, file_paths, title_index, preview_count, store_previews, min_duration, crop_threshold_frames, crop_threshold_pixels, exclude_extensions, hw_decode);
-
-    hb_list_close(&file_paths);
-}
-
 /**
  * Initializes a scan of the by calling hb_scan_init
  * @param h Handle to hb_handle_t
@@ -375,15 +361,17 @@ void hb_scan( hb_handle_t * h, const char * path, int title_index,
  * @param preview_count Number of preview images to generate.
  * @param store_previews Whether or not to write previews to disk.
  * @param min_duration Ignore titles below a given threshold
+ * @param max_duration Ignore titles longer than a given threshold
  * @param crop_threshold_frames The number of frames to trigger smart crop
  * @param crop_threshold_pixels The variance in pixels detected that are allowed for.
  * @param exclude_extensions A list of extensions to exclude for this scan.
  * @param hw_decode  The preferred hardware decoder to use..
+ * @param keep_duplicate_titles
  */
-void hb_scan_list( hb_handle_t * h, hb_list_t * paths, int title_index,
-              int preview_count, int store_previews, uint64_t min_duration,
+void hb_scan( hb_handle_t * h, hb_list_t * paths, int title_index,
+              int preview_count, int store_previews, uint64_t min_duration, uint64_t max_duration,
               int crop_threshold_frames, int crop_threshold_pixels,
-              hb_list_t * exclude_extensions, int hw_decode)
+              hb_list_t * exclude_extensions, int hw_decode, int keep_duplicate_titles)
 {
     hb_title_t * title;
 
@@ -469,9 +457,9 @@ void hb_scan_list( hb_handle_t * h, hb_list_t * paths, int title_index,
     hb_log( "hb_scan: path=%s, title_index=%d", path_info, title_index );
     h->scan_thread = hb_scan_init( h, &h->scan_die, paths, title_index,
                                    &h->title_set, preview_count,
-                                   store_previews, min_duration,
+                                   store_previews, min_duration, max_duration,
                                    crop_threshold_frames, crop_threshold_pixels,
-                                   exclude_extensions, hw_decode);
+                                   exclude_extensions, hw_decode, keep_duplicate_titles);
 }
 
 void hb_force_rescan( hb_handle_t * h )
@@ -783,8 +771,8 @@ static void process_filter(hb_filter_object_t * filter)
 }
 
 // Get preview and apply applicable filters
-hb_image_t * hb_get_preview3(hb_handle_t * h, int picture,
-                             hb_dict_t * job_dict)
+hb_image_t * hb_get_preview(hb_handle_t * h, hb_dict_t * job_dict,
+                             int picture, int rescale, int pix_fmt)
 {
     hb_job_t    * job;
     hb_title_t  * title = NULL;
@@ -892,50 +880,55 @@ hb_image_t * hb_get_preview3(hb_handle_t * h, int picture,
     job->cfr = init.cfr;
     job->grayscale = init.grayscale;
 
-    // Add "cropscale"
-    // Adjusts for pixel aspect, performs any requested
-    // post-scaling and sets required pix_fmt AV_PIX_FMT_RGB32
-    //
-    // This will scale the result at the end of the pipeline.
-    // I.e. padding will be scaled
-    hb_rational_t par = job->par;
-
-    int scaled_width  = init.geometry.width;
-    int scaled_height = init.geometry.height;
-
-    filter = hb_filter_init(HB_FILTER_CROP_SCALE);
-    filter->settings = hb_dict_init();
-    if (par.num >= par.den)
+    if (rescale)
     {
-        scaled_width = scaled_width * par.num / par.den;
+        // Add "cropscale"
+        // Adjusts for pixel aspect, performs any requested post-scaling
+        //
+        // This will scale the result at the end of the pipeline.
+        // I.e. padding will be scaled
+        hb_rational_t par = job->par;
+
+        int scaled_width  = init.geometry.width;
+        int scaled_height = init.geometry.height;
+
+        filter = hb_filter_init(HB_FILTER_CROP_SCALE);
+        filter->settings = hb_dict_init();
+        if (par.num >= par.den)
+        {
+            scaled_width = scaled_width * par.num / par.den;
+        }
+        else
+        {
+            scaled_height = scaled_height * par.den / par.num;
+        }
+        hb_dict_set_int(filter->settings, "width", scaled_width);
+        hb_dict_set_int(filter->settings, "height", scaled_height);
+        hb_list_add(job->list_filter, filter);
+
+        if (filter->init != NULL && filter->init(filter, &init))
+        {
+            hb_error("hb_get_preview3: Failure to initialize filter '%s'",
+                     filter->name);
+            hb_list_rem(list_filter, filter);
+            hb_filter_close(&filter);
+        }
     }
-    else
-    {
-        scaled_height = scaled_height * par.den / par.num;
-    }
-    hb_dict_set_int(filter->settings, "width", scaled_width);
-    hb_dict_set_int(filter->settings, "height", scaled_height);
-    hb_list_add(job->list_filter, filter);
 
-    if (filter->init != NULL && filter->init(filter, &init))
+    if (pix_fmt != AV_PIX_FMT_NONE)
     {
-        hb_error("hb_get_preview3: Failure to initialize filter '%s'",
-                 filter->name);
-        hb_list_rem(list_filter, filter);
-        hb_filter_close(&filter);
-    }
+        filter = hb_filter_init(HB_FILTER_FORMAT);
+        filter->settings = hb_dict_init();
+        hb_dict_set_string(filter->settings, "format", av_get_pix_fmt_name(pix_fmt));
+        hb_list_add(job->list_filter, filter);
 
-    filter = hb_filter_init(HB_FILTER_FORMAT);
-    filter->settings = hb_dict_init();
-    hb_dict_set_string(filter->settings, "format", av_get_pix_fmt_name(AV_PIX_FMT_RGB32));
-    hb_list_add(job->list_filter, filter);
-
-    if (filter->init != NULL && filter->init(filter, &init))
-    {
-        hb_error("hb_get_preview3: Failure to initialize filter '%s'",
-                 filter->name);
-        hb_list_rem(list_filter, filter);
-        hb_filter_close(&filter);
+        if (filter->init != NULL && filter->init(filter, &init))
+        {
+            hb_error("hb_get_preview3: Failure to initialize filter '%s'",
+                     filter->name);
+            hb_list_rem(list_filter, filter);
+            hb_filter_close(&filter);
+        }
     }
 
     hb_avfilter_combine(list_filter);
@@ -1035,11 +1028,17 @@ fail:
             height = geo->height;
         }
 
-        image = hb_image_init(AV_PIX_FMT_RGB32, width, height);
+        image = hb_image_init(pix_fmt, width, height);
     }
     hb_job_close(&job);
 
     return image;
+}
+
+hb_image_t * hb_get_preview3(hb_handle_t * h, int picture,
+                             hb_dict_t * job_dict)
+{
+    return hb_get_preview(h, job_dict, picture, 1, AV_PIX_FMT_RGB32);
 }
 
  /**
@@ -2310,11 +2309,15 @@ static void redirect_thread_func(void * _data)
     if (pipe(pfd))
        return;
 #if defined( SYS_MINGW )
-    // dup2 doesn't work on windows for some stupid reason
-    stderr->_file = pfd[1];
+    // Non-console windows apps do not have a stderr->_file
+    // assigned properly
+    (void) freopen("NUL", "w", stderr);
+    _dup2(pfd[1], _fileno(stderr));
 #else
-    dup2(pfd[1], /*stderr*/ 2);
+    dup2(pfd[1], STDERR_FILENO);
 #endif
+    setvbuf(stderr, NULL, _IONBF, 0);
+
     FILE * log_f = fdopen(pfd[0], "rb");
 
     char line_buffer[500];

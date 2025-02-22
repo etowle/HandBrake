@@ -1,6 +1,6 @@
 /* pad_vt.m
 
-   Copyright (c) 2003-2024 HandBrake Team
+   Copyright (c) 2003-2025 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -40,11 +40,11 @@ struct hb_filter_private_s
 };
 
 static int pad_vt_init(hb_filter_object_t   *filter,
-                           hb_filter_init_t *init);
+                       hb_filter_init_t *init);
 
 static int pad_vt_work(hb_filter_object_t *filter,
-                           hb_buffer_t **buf_in,
-                           hb_buffer_t **buf_out);
+                       hb_buffer_t **buf_in,
+                       hb_buffer_t **buf_out);
 
 static void pad_vt_close(hb_filter_object_t *filter);
 
@@ -67,7 +67,7 @@ hb_filter_object_t hb_filter_pad_vt =
 };
 
 static int pad_vt_init(hb_filter_object_t *filter,
-                        hb_filter_init_t   *init)
+                       hb_filter_init_t   *init)
 {
     filter->private_data = calloc(sizeof(struct hb_filter_private_s), 1);
     if (filter->private_data == NULL)
@@ -75,7 +75,7 @@ static int pad_vt_init(hb_filter_object_t *filter,
         hb_error("pad_vt: calloc failed");
         return -1;
     }
-    hb_filter_private_t * pv = filter->private_data;
+    hb_filter_private_t *pv = filter->private_data;
     pv->input = *init;
     pv->desc = av_pix_fmt_desc_get(init->pix_fmt);
 
@@ -171,6 +171,7 @@ static int pad_vt_init(hb_filter_object_t *filter,
     pv->mtl = hb_metal_context_init(hb_pad_vt_metallib_data,
                                     hb_pad_vt_metallib_len,
                                     "pad",
+                                    NULL,
                                     sizeof(struct mtl_pad_params),
                                     width, height,
                                     init->pix_fmt, init->color_range);
@@ -187,7 +188,7 @@ static int pad_vt_init(hb_filter_object_t *filter,
     return 0;
 }
 
-static void pad_vt_close(hb_filter_object_t * filter)
+static void pad_vt_close(hb_filter_object_t *filter)
 {
     hb_filter_private_t *pv = filter->private_data;
 
@@ -264,14 +265,14 @@ static hb_buffer_t * filter_frame(hb_filter_private_t *pv, hb_buffer_t *in)
         }
 
         int channels;
-        const MTLPixelFormat format = hb_metal_pix_fmt_from_component(comp, &channels);
+        const MTLPixelFormat format = hb_metal_pix_fmt_from_component(comp, 0, &channels);
         if (format == MTLPixelFormatInvalid)
         {
             goto fail;
         }
 
-        CVMetalTextureRef src  = hb_metal_create_texture_from_pixbuf(pv->mtl->cache, cv_src, i, format);
-        CVMetalTextureRef dest = hb_metal_create_texture_from_pixbuf(pv->mtl->cache, cv_dest, i, format);
+        CVMetalTextureRef src  = hb_metal_create_texture_from_pixbuf(pv->mtl->cache, cv_src, i, channels, format);
+        CVMetalTextureRef dest = hb_metal_create_texture_from_pixbuf(pv->mtl->cache, cv_dest, i, channels, format);
 
         id<MTLTexture> tex_src  = CVMetalTextureGetTexture(src);
         id<MTLTexture> tex_dest = CVMetalTextureGetTexture(dest);
@@ -282,7 +283,9 @@ static hb_buffer_t * filter_frame(hb_filter_private_t *pv, hb_buffer_t *in)
         CFRelease(dest);
     }
 
+#if defined(HB_VT_PROPAGATE_ATTACHMENTS)
     CVBufferPropagateAttachments(cv_src, cv_dest);
+#endif
 
     out = hb_buffer_wrapper_init();
     out->storage_type      = COREMEDIA;

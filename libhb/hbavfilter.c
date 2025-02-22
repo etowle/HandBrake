@@ -1,6 +1,6 @@
 /* hbavfilter.c
 
-   Copyright (c) 2003-2024 HandBrake Team
+   Copyright (c) 2003-2025 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -278,13 +278,6 @@ void hb_avfilter_graph_update_init(hb_avfilter_graph_t * graph,
     init->geometry.par.num = link->sample_aspect_ratio.num;
     init->geometry.par.den = link->sample_aspect_ratio.den;
     init->pix_fmt          = link->format;
-    // avfilter can generate "unknown" framerates.  If this happens
-    // just pass along the source framerate.
-    if (link->frame_rate.num > 0 && link->frame_rate.den > 0)
-    {
-        init->vrate.num        = link->frame_rate.num;
-        init->vrate.den        = link->frame_rate.den;
-    }
 }
 
 int hb_avfilter_add_frame(hb_avfilter_graph_t * graph, AVFrame * frame)
@@ -331,7 +324,7 @@ hb_buffer_t * hb_avfilter_get_buf(hb_avfilter_graph_t * graph)
         else
 #endif
         {
-            buf = hb_avframe_to_video_buffer(graph->frame, graph->out_time_base, 1);
+            buf = hb_avframe_to_video_buffer(graph->frame, graph->out_time_base);
         }
         av_frame_unref(graph->frame);
         return buf;

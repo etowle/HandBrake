@@ -1,6 +1,6 @@
 /* audio_resample.c
  *
- * Copyright (c) 2003-2024 HandBrake Team
+ * Copyright (c) 2003-2025 HandBrake Team
  * This file is part of the HandBrake source code
  * Homepage: <http://handbrake.fr/>
  * It may be used under the terms of the GNU General Public License v2.
@@ -94,7 +94,7 @@ void hb_audio_resample_set_ch_layout(hb_audio_resample_t *resample,
         if (av_channel_layout_compare(ch_layout, &stereo_dowmix) == 0)
         {
             // Dolby Surround is Stereo when it comes to remixing
-            AVChannelLayout stereo = AV_CHANNEL_LAYOUT_STEREO_DOWNMIX;
+            AVChannelLayout stereo = AV_CHANNEL_LAYOUT_STEREO;
             av_channel_layout_copy(&resample->in.ch_layout, &stereo);
         }
         // swresample can't remap a single-channel layout to

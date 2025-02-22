@@ -1,6 +1,6 @@
 /* notifications.c
  *
- * Copyright (C) 2023-2024 HandBrake Team
+ * Copyright (C) 2023-2025 HandBrake Team
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -236,6 +236,9 @@ power_save_cb (GPowerProfileMonitor *monitor, GParamSpec *pspec,
                signal_user_data_t *ud)
 {
     gboolean power_save;
+
+    if (!ghb_dict_get_bool(ud->prefs, "PauseEncodingOnPowerSave"))
+        return;
 
     int queue_state = ghb_get_queue_state();
 

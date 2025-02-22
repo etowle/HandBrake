@@ -59,46 +59,46 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string"/>
-              <xsd:attribute name="type" type="xsd:string"/>
-              <xsd:attribute name="mimetype" type="xsd:string"/>
-              <xsd:attribute ref="xml:space"/>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string"/>
-              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
-              <xsd:attribute ref="xml:space"/>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required"/>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -421,7 +421,7 @@ Das Aktivitätsprotokoll kann weitere Informationen enthalten.</value>
     <value>Tonspuren</value>
   </data>
   <data name="AudioViewModel_ConfigureDefaults" xml:space="preserve">
-    <value>Auswahlverhalten ...</value>
+    <value>Auswahlverhalten …</value>
   </data>
   <data name="AudioViewModel_SwitchBackToTracks" xml:space="preserve">
     <value>Zu den Spuren zurückkehren</value>
@@ -446,10 +446,6 @@ Das Aktivitätsprotokoll kann weitere Informationen enthalten.</value>
   </data>
   <data name="OptionsViewModel_NewUpdate" xml:space="preserve">
     <value>Ein neues Update ist verfügbar! Bitte die Webseite auf Versionshinweise prüfen.</value>
-  </data>
-  <data name="OptionsViewModel_64bitAvailable" xml:space="preserve">
-    <value>Dieses System unterstützt die 64bit-Version von HandBrake! Diese bietet Verbesserungen bezüglich Leistung und Stabilität, bezogen auf die 32bit-Version.
-Bitte die Webseite auf Versionshinweise prüfen.</value>
   </data>
   <data name="OptionsViewModel_NoNewUpdates" xml:space="preserve">
     <value>Es sind momentan keine Updates verfügbar.</value>
@@ -550,7 +546,7 @@ Soll HandBrake wirklich beendet werden?</value>
     <value>Zu den Spuren zurückkehren</value>
   </data>
   <data name="SubtitlesViewModel_ConfigureDefaults" xml:space="preserve">
-    <value>Auswahlverhalten ...</value>
+    <value>Auswahlverhalten …</value>
   </data>
   <data name="PresetService_ArchiveFile" xml:space="preserve">
     <value>Archivierte Datei:</value>
@@ -1124,14 +1120,8 @@ Hinweis: Das Verhalten beim Überschreiben von Dateien kann in den Einstellungen
   <data name="MetaDataView_Title" xml:space="preserve">
     <value>Metadaten</value>
   </data>
-  <data name="OptionsView_EnableNvencEncoding" xml:space="preserve">
-    <value>Verwendung des Nvidia NVENC-Encoders erlauben</value>
-  </data>
-  <data name="OptionsView_EnableQuicksyncEncoding" xml:space="preserve">
-    <value>Verwendung des Intel QuickSync-Encoders erlauben</value>
-  </data>
-  <data name="OptionsView_EnableVceEncoding" xml:space="preserve">
-    <value>Verwendung des AMD VCN-Encoders erlauben</value>
+  <data name="OptionsView_EnableDirectXDecoding" xml:space="preserve">
+    <value>Verwendung von DirectX-Decodierung erlauben</value>
   </data>
   <data name="OptionsView_InvalidFileFormatChars" xml:space="preserve">
     <value>Das eingegebene Dateiformat enthielt ungültige Zeichen. Diese wurden entfernt.</value>
@@ -1228,6 +1218,9 @@ Hinweis: Das Verhalten beim Überschreiben von Dateien kann in den Einstellungen
   </data>
   <data name="Options_MinTitleScanLength" xml:space="preserve">
     <value>Minimale Länge von DVD- und Blu-ray-Titeln in Sekunden. Kürzere Titel werden übersprungen:</value>
+  </data>
+  <data name="Options_KeepDuplicateTitles" xml:space="preserve">
+    <value>Doppelte Titel auf Blu-ray-Quellen behalten (Neustart erforderlich)</value>
   </data>
   <data name="Options_MP4FileExtension" xml:space="preserve">
     <value>MP4-Dateiendung:</value>
@@ -1913,13 +1906,13 @@ Sie können den Text oben per Drag &amp; Drop ziehen oder eingeben.</value>
     <value>Zahl anhängen</value>
   </data>
   <data name="FiltersViewAuto_DeblockPreset" xml:space="preserve">
-    <value>Deblock-Voreinstellung</value>
+    <value>FiltersView_DeblockPreset</value>
   </data>
   <data name="FiltersViewAuto_DeblockTune" xml:space="preserve">
     <value>Deblock-Abstimmung</value>
   </data>
-  <data name="OptionsView_ChoiceOfEncoderHint" xml:space="preserve">
-    <value>Die Wahl des Encoders wird im Video-Tab verfügbar gemacht.</value>
+  <data name="OptionsView_EncodeNotes" xml:space="preserve">
+    <value>Hinweis: Nicht alle Hardware-Encoder haben zusätzliche Einstellungen. Alle auf diesem System verfügbaren und unterstützten Hardware-Encoder stehen auf der Registerkarte "Video" unter dem Dropdown-Menü "Video-Encoder" zur Auswahl.</value>
   </data>
   <data name="Queue_RecoverQueueQuestionPlural" xml:space="preserve">
     <value>HandBrake hat einige nicht fertiggestellte Warteschlangedateien gefunden. Diese werden von mehreren Instanzen von HandBrake sein. Sollen alle nicht fertig gestellten Aufgaben wiederhergestellt werden?</value>
@@ -2304,7 +2297,7 @@ Bitte eine andere Voreinstellung auswählen.</value>
     <value>Stop</value>
   </data>
   <data name="String1" xml:space="preserve">
-    <value/>
+    <value />
   </data>
   <data name="PresetService_CategoryAlreadyExists" xml:space="preserve">
     <value>Der eingegebene Name der Kategorie existiert schon. Bitte einen anderen Namen wählen.</value>
@@ -2325,7 +2318,7 @@ Bitte eine andere Voreinstellung auswählen.</value>
     <value>Level ab der Warnungen wegen geringem Speicherplatz erscheinen:</value>
   </data>
   <data name="OptionsView_SimultaneousHardwareLimitNotice" xml:space="preserve">
-    <value>Hinweis: Dies ist die Obergrenze für gleichzeitige Aufgaben. Es können Hardwarebeschränkungen wirksam werden, die die tatsächliche Anzahl der gleichzeitigen Aufgaben während der Codierung verringern. Die Einstellung wird erst beim nächsten Warteschlangenstapel oder Neustart der Anwendung wirksam.</value>
+    <value>Hinweis: Dies ist die Obergrenze für gleichzeitige Aufgaben. Es können Hardwarebeschränkungen wirksam werden, die die tatsächliche Anzahl gleichzeitiger Aufgaben während der Codierung verringern. Die Einstellung wird erst beim nächsten Warteschlangenstapel oder Neustart der Anwendung wirksam.</value>
   </data>
   <data name="Preset_NotAvailable" xml:space="preserve">
     <value>(Nicht verfügbar)</value>
@@ -2579,7 +2572,7 @@ Es werden nur Warteschlangen-Dateien der aktuellen Version unterstützt.</value>
     <value>{0} Aufgaben abgeschlossen. {1} Arbeite an {2} Aufgaben,{3} weitere anstehend.</value>
   </data>
   <data name="MainView_AutonameRegenerate" xml:space="preserve">
-    <value>Wiederherstellen (Autoname)</value>
+    <value>Wiederherstellen (Automatische Benennung)</value>
   </data>
   <data name="MainView_OpenDirectory" xml:space="preserve">
     <value>Dieses Verzeichnis öffnen</value>
@@ -2699,7 +2692,7 @@ Alternativ können Sie auch das Kontrollkästchen "Externen Abspieler verwenden"
     <value>Die integrierte Vorschau ist für den WebM-Container nicht verfügbar. Es muss ein externer Player verwendet werden.</value>
   </data>
   <data name="StaticPreview_EncodingPreview" xml:space="preserve">
-    <value>Vorschau encodieren…</value>
+    <value>Vorschau encodieren …</value>
   </data>
   <data name="StaticPreview_Previews" xml:space="preserve">
     <value>Vorschau:</value>
@@ -2821,5 +2814,135 @@ Um mehrere gleichzeitige Encodierungen zu ermöglichen, aktivieren Sie die "Proz
   </data>
   <data name="VideoView_LosslessEncodeOnly" xml:space="preserve">
     <value>Nur verlustfreie Encodierung.</value>
+  </data>
+  <data name="MainView_HideClassicMenu" xml:space="preserve">
+    <value>Menüleiste ausblenden</value>
+  </data>
+  <data name="MainView_ShowClassicMenu" xml:space="preserve">
+    <value>Menüleiste einblenden</value>
+  </data>
+  <data name="OptionsViewVideo_UnsupportedIntelDriver" xml:space="preserve">
+    <value>(Achtung: Nicht unterstützter Treiber! - Aktualisierung empfohlen)</value>
+  </data>
+  <data name="QueueSelectionView_RangeLimits" xml:space="preserve">
+    <value>Bereichsgrenzen:</value>
+  </data>
+  <data name="QueueSelectionView_RangeLimitsDesc" xml:space="preserve">
+    <value>Begrenzt die Länge der Titel, die der Warteschlange hinzugefügt werden.</value>
+  </data>
+  <data name="QueueSelectionView_RangeLimitsEnable" xml:space="preserve">
+    <value>Bereichsgrenzen aktivieren</value>
+  </data>
+  <data name="AddToQueue_RangeLimitError" xml:space="preserve">
+    <value>Einige Titel konnten nicht in die Warteschlange aufgenommen werden, da sie außerhalb der gewählten Bereichsgrenzen lagen.</value>
+  </data>
+  <data name="QueueView_StartAtTime" xml:space="preserve">
+    <value>Später starten</value>
+  </data>
+  <data name="QueueView_QueueStartTime" xml:space="preserve">
+    <value>Warteschlangen-Startzeit:</value>
+  </data>
+  <data name="QueueView_EncodeShutdown" xml:space="preserve">
+    <value>Encodierung beenden …</value>
+  </data>
+  <data name="PictureSettingsView_AllowUpscaling" xml:space="preserve">
+    <value>Hochskalieren zulassen</value>
+  </data>
+  <data name="PictureSettingsView_OptimalSize" xml:space="preserve">
+    <value>Optimale Größe</value>
+  </data>
+  <data name="OptionsView_Available" xml:space="preserve">
+    <value>Auf diesem System verfügbar.</value>
+  </data>
+  <data name="OptionsView_NotAvailable" xml:space="preserve">
+    <value>Auf diesem System nicht verfügbar.</value>
+  </data>
+  <data name="MainView_ScanningStatus" xml:space="preserve">
+    <value>Bitte warten …</value>
+  </data>
+  <data name="MainView_Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="MainView_OpenLog" xml:space="preserve">
+    <value>Aktivitätsprotokoll öffnen</value>
+  </data>
+  <data name="OptionsView_EnableNvencEncoding" xml:space="preserve">
+    <value />
+  </data>
+  <data name="OptionsView_EnableQuicksyncEncoding" xml:space="preserve">
+    <value />
+  </data>
+  <data name="OptionsView_EnableVceEncoding" xml:space="preserve">
+    <value />
+  </data>
+  <data name="OptionsView_ChoiceOfEncoderHint" xml:space="preserve">
+    <value />
+  </data>
+  <data name="AnamorphicMode_Custom" xml:space="preserve">
+    <value>Eigene</value>
+  </data>
+  <data name="AnamorphicMode_None" xml:space="preserve">
+    <value>Keine</value>
+  </data>
+  <data name="AnamorphicMode_Automatic" xml:space="preserve">
+    <value>Automatisch</value>
+  </data>
+  <data name="CombDetect_Off" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="CombDetect_Custom" xml:space="preserve">
+    <value>Eigene</value>
+  </data>
+  <data name="CombDetect_Default" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="DeinterlaceFilter_Off" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="Denoise_Off" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="Detelecine_Off" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="Detelecine_Default" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="Detelecine_Custom" xml:space="preserve">
+    <value>Eigene</value>
+  </data>
+  <data name="Sharpen_Off" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="Options_MaxTitleScanDuration" xml:space="preserve">
+    <value>Maximale DVD- und Blu-ray-Titeldauer in Sekunden. Längere Titel werden übersprungen:</value>
+  </data>
+  <data name="DefaultRangeMode_Chapters" xml:space="preserve">
+    <value>Kapitel</value>
+  </data>
+  <data name="DefaultRangeMode_Seconds" xml:space="preserve">
+    <value>Sekunden</value>
+  </data>
+  <data name="DefaultRangeMode_Frames" xml:space="preserve">
+    <value>Bilder</value>
+  </data>
+  <data name="Options_RangeModeSelection" xml:space="preserve">
+    <value>Standard-Bereichsmodus für Titel:</value>
+  </data>
+  <data name="WhenDone_CustomAction" xml:space="preserve">
+    <value>Benutzerdefinierte Aktion</value>
+  </data>
+  <data name="OptionsView_CustomActionConfig" xml:space="preserve">
+    <value>Konfiguration "Benutzerdefinierte Aktion"</value>
+  </data>
+  <data name="MainView_OpenAutonamePreferences" xml:space="preserve">
+    <value>Einstellung der automatischen Benennung öffnen</value>
+  </data>
+  <data name="Options_RunAction" xml:space="preserve">
+    <value>Skript / Programm ausführen:</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="OptionsViewModel_PortableMode" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
   </data>
 </root>

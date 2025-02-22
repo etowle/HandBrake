@@ -1,6 +1,6 @@
 /* hwaccel.h
  *
- * Copyright (c) 2003-2024 HandBrake Team
+ * Copyright (c) 2003-2025 HandBrake Team
  * This file is part of the HandBrake source code.
  * Homepage: <http://handbrake.fr/>.
  * It may be used under the terms of the GNU General Public License v2.
@@ -11,6 +11,8 @@
 #define HANDBRAKE_HWACCEL_COMMON_H
 
 #include "handbrake/hbffmpeg.h"
+
+int hb_directx_available();
 
 enum AVPixelFormat hw_hwaccel_get_hw_format(AVCodecContext *ctx, const enum AVPixelFormat *pix_fmts);
 

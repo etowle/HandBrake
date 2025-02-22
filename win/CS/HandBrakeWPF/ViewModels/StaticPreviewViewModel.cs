@@ -18,8 +18,6 @@ namespace HandBrakeWPF.ViewModels
     using System.Windows;
     using System.Windows.Media.Imaging;
 
-    using HandBrake.Interop.Interop.Interfaces;
-
     using HandBrakeWPF.Helpers;
     using HandBrakeWPF.Properties;
     using HandBrakeWPF.Services.Encode.Model.Models;
@@ -326,6 +324,11 @@ namespace HandBrakeWPF.ViewModels
 
         public bool IsOpen { get; set; }
 
+        public void ShowCropPanel()
+        {
+            this.ShowPictureSettingControls = true;
+        }
+
         public bool ShowPictureSettingControls
         {
             get => this.showPictureSettingControls;
@@ -387,7 +390,7 @@ namespace HandBrakeWPF.ViewModels
             BitmapSource image = null;
             try
             {
-                image = this.scanService.GetPreview(this.Task, this.SelectedPreviewImage);
+                image = this.scanService.GetPreview(this.Task, this.SelectedPreviewImage, false);
             }
             catch (Exception exc)
             {
@@ -537,7 +540,7 @@ namespace HandBrakeWPF.ViewModels
                 return;
             }
 
-            QueueTask task = new QueueTask(encodeTask, this.SelectedTitle.SourcePath, null, false, null);
+            QueueTask task = new QueueTask(encodeTask, this.SelectedTitle.SourcePath, null, false, this.SelectedTitle);
             ThreadPool.QueueUserWorkItem(this.CreatePreview, task);
         }
 

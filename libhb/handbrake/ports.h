@@ -1,6 +1,6 @@
 /* ports.h
 
-   Copyright (c) 2003-2024 HandBrake Team
+   Copyright (c) 2003-2025 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -79,6 +79,7 @@ enum hb_cpu_platform
     HB_CPU_PLATFORM_INTEL_TGL,
     HB_CPU_PLATFORM_INTEL_ADL,
     HB_CPU_PLATFORM_INTEL_DG2,
+    HB_CPU_PLATFORM_INTEL_LNL,
 };
 int         hb_get_cpu_count(void);
 int         hb_get_cpu_platform(void);

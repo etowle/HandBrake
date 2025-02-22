@@ -17,6 +17,7 @@ namespace HandBrakeWPF.ViewModels
     using System.IO;
     using System.Linq;
     using System.Media;
+    using System.Threading;
     using System.Windows;
     using System.Windows.Documents;
     using System.Windows.Media;
@@ -64,6 +65,7 @@ namespace HandBrakeWPF.ViewModels
         private string logDirectory;
         private BindingList<int> logVerbosityOptions = new BindingList<int>();
         private long minLength;
+        private long maxLength;
         private bool minimiseToTray;
         private bool preventSleep;
         private BindingList<int> previewPicturesToScan = new BindingList<int>();
@@ -95,9 +97,7 @@ namespace HandBrakeWPF.ViewModels
         private string whenDoneAudioFile;
         private bool playSoundWhenDone;
         private bool playSoundWhenQueueDone;
-        private bool enableQuickSyncEncoding;
-        private bool enableVceEncoder;    
-        private bool enableNvencEncoder;
+        private bool enableDirectXDecoding;
         private InterfaceLanguage selectedLanguage;
         private bool showAddSelectionToQueue;
         private bool showAddAllToQueue;
@@ -121,6 +121,15 @@ namespace HandBrakeWPF.ViewModels
         private bool useIsoDateFormat;
         private BindingList<string> excludedFileExtensions;
         private bool recursiveFolderScan;
+        private bool keepDuplicateTitles;
+        private bool maxDurationEnabled;
+        private DefaultRangeMode selectedDefaultRangeMode;
+
+        private string queueDoneAction;
+
+        private string queueDoneArguments;
+
+        private bool queueDoneCustomActionEnabled;
 
         public OptionsViewModel(
             IUserSettingService userSettingService,
@@ -389,8 +398,7 @@ namespace HandBrakeWPF.ViewModels
                 this.NotifyOfPropertyChange(() => this.SendFileAfterEncode);
             }
         }
-
-
+        
         public WhenDone WhenDone
         {
             get => this.whenDone;
@@ -399,6 +407,7 @@ namespace HandBrakeWPF.ViewModels
             {
                 this.whenDone = value;
                 this.NotifyOfPropertyChange(() => this.WhenDone);
+                this.NotifyOfPropertyChange(() => this.IsQueueDoneCustomActionEnabled);
             }
         }
 
@@ -408,6 +417,66 @@ namespace HandBrakeWPF.ViewModels
 
         public bool SendSystemNotificationOnQueueDone { get; set; }
 
+        public bool IsQueueDoneCustomActionEnabled => this.WhenDone == WhenDone.CustomAction;
+
+        public bool QueueDoneCustomActionEnabled
+        {
+            get => this.queueDoneCustomActionEnabled;
+            set
+            {
+                if (value == this.queueDoneCustomActionEnabled)
+                {
+                    return;
+                }
+
+                this.queueDoneCustomActionEnabled = value;
+                this.NotifyOfPropertyChange(() => this.QueueDoneCustomActionEnabled);
+            }
+        }
+
+        public string QueueDoneAction
+        {
+            get => this.queueDoneAction;
+            set
+            {
+                if (value == this.queueDoneAction)
+                {
+                    return;
+                }
+
+                this.queueDoneAction = value;
+                this.NotifyOfPropertyChange(() => this.QueueDoneAction);
+            }
+        }
+
+        public string QueueDoneActionFullPath { get; set; }
+
+        public string QueueDoneArguments
+        {
+            get => this.queueDoneArguments;
+            set
+            {
+                if (value == this.queueDoneArguments)
+                {
+                    return;
+                }
+
+                this.queueDoneArguments = value;
+                this.NotifyOfPropertyChange(() => this.QueueDoneArguments);
+            }
+        }
+
+        public BindingList<PlaceHolderBucket> QueueDoneArgumentsOptions
+        {
+            get
+            {
+                return new BindingList<PlaceHolderBucket>
+                       {
+                           new PlaceHolderBucket { Name = Constants.AutonameOutputFolder },
+                       };
+            }
+        }
+        
         /* Output Files */
 
         public string AutoNameDefaultPath
@@ -574,6 +643,7 @@ namespace HandBrakeWPF.ViewModels
                 {
                     new PlaceHolderBucket { Name = Constants.Source },
                     new PlaceHolderBucket { Name = Constants.Title },
+                    new PlaceHolderBucket { Name = Constants.Angle },
                     new PlaceHolderBucket { Name = Constants.Chapters},
                     new PlaceHolderBucket { Name = Constants.CreationDate },
                     new PlaceHolderBucket { Name = Constants.CreationTime },
@@ -606,7 +676,6 @@ namespace HandBrakeWPF.ViewModels
             }
         }
 
-
         public BindingList<PlaceHolderBucket> WhenDoneArguments
         {
             get
@@ -615,7 +684,8 @@ namespace HandBrakeWPF.ViewModels
                        {
                            new PlaceHolderBucket { Name = Constants.SourceArg },
                            new PlaceHolderBucket { Name = Constants.DestinationArg },
-                           new PlaceHolderBucket { Name = Constants.ExitCodeArg }
+                           new PlaceHolderBucket { Name = Constants.ExitCodeArg },
+                           new PlaceHolderBucket { Name = Constants.DestinationFolder }
                        };
             }
         }
@@ -826,6 +896,37 @@ namespace HandBrakeWPF.ViewModels
             }
         }
 
+        public long MaxLength
+        {
+            get => this.maxLength;
+
+            set
+            {
+                this.maxLength = value;
+                this.NotifyOfPropertyChange(() => this.MaxLength);
+            }
+        }
+
+        public bool MaxDurationEnabled
+        {
+            get => this.maxDurationEnabled;
+            set
+            {
+                if (value == this.maxDurationEnabled)
+                {
+                    return;
+                }
+
+                if (!value)
+                {
+                    MaxLength = 0;
+                }
+
+                this.maxDurationEnabled = value;
+                this.OnPropertyChanged();
+            }
+        }
+
         public bool MinimiseToTray
         {
             get => this.minimiseToTray;
@@ -928,51 +1029,47 @@ namespace HandBrakeWPF.ViewModels
             }
         }
 
+        public bool KeepDuplicateTitles
+        {
+            get => this.keepDuplicateTitles;
+            set
+            {
+                if (value == this.keepDuplicateTitles) return;
+                this.keepDuplicateTitles = value;
+                this.NotifyOfPropertyChange(() => this.KeepDuplicateTitles);
+            }
+        }
+
+        public BindingList<DefaultRangeMode> DefaultRangeModes { get; } = new BindingList<DefaultRangeMode>(EnumHelper<DefaultRangeMode>.GetEnumList().ToList());
+
+        public DefaultRangeMode SelectedDefaultRangeMode
+        {
+            get => this.selectedDefaultRangeMode;
+            set
+            {
+                if (value == this.selectedDefaultRangeMode)
+                {
+                    return;
+                }
+
+                this.selectedDefaultRangeMode = value;
+                this.NotifyOfPropertyChange(() => this.SelectedDefaultRangeMode);
+            }
+        }
+
         /* Video */
-        public bool EnableQuickSyncEncoding
+        public bool EnableDirectXDecoding
         {
-            get => this.enableQuickSyncEncoding && this.IsQuickSyncAvailable;
+            get => this.enableDirectXDecoding;
             set
             {
-                if (value == this.enableQuickSyncEncoding)
+                if (value == this.enableDirectXDecoding)
                 {
                     return;
                 }
 
-                this.enableQuickSyncEncoding = value;
-                this.NotifyOfPropertyChange(() => this.EnableQuickSyncEncoding);
-                this.NotifyOfPropertyChange(() => this.CanSetQsvDecForOtherEncodes);
-            }
-        }
-
-        public bool EnableVceEncoder
-        {
-            get => this.enableVceEncoder && this.IsVceAvailable;
-            set
-            {
-                if (value == this.enableVceEncoder)
-                {
-                    return;
-                }
-
-                this.enableVceEncoder = value;
-                this.NotifyOfPropertyChange(() => this.EnableVceEncoder);
-            }
-        }
-
-        public bool EnableNvencEncoder
-        {
-            get => this.enableNvencEncoder && this.IsNvencAvailable;
-            set
-            {
-                if (value == this.enableNvencEncoder)
-                {
-                    return;
-                }
-
-                this.enableNvencEncoder = value;
-                this.NotifyOfPropertyChange(() => this.EnableNvencEncoder);
-                this.NotifyOfPropertyChange(() => this.IsNvdecAvailable);
+                this.enableDirectXDecoding = value;
+                this.NotifyOfPropertyChange(() => this.EnableDirectXDecoding);
             }
         }
 
@@ -1023,6 +1120,9 @@ namespace HandBrakeWPF.ViewModels
             }
         }
 
+        public bool DisplayIntelDriverWarning { get; set; }
+        public bool DisplayNvidiaDriverWarning { get; set; }
+
         public VideoScaler SelectedScalingMode { get; set; }
 
         public bool IsQuickSyncAvailable { get; } = HandBrakeHardwareEncoderHelper.IsQsvAvailable;
@@ -1033,9 +1133,11 @@ namespace HandBrakeWPF.ViewModels
 
         public bool IsNvencAvailable { get; } = HandBrakeHardwareEncoderHelper.IsNVEncH264Available;
 
+        public bool IsDirectXAvailable { get; } = HandBrakeHardwareEncoderHelper.IsDirectXAvailable;
+
         public bool IsUseQsvDecAvailable => this.IsQuickSyncAvailable && this.EnableQuickSyncDecoding;
 
-        public bool IsNvdecAvailable => HandBrakeHardwareEncoderHelper.IsNVDecAvailable && this.EnableNvencEncoder;
+        public bool IsNvdecAvailable => HandBrakeHardwareEncoderHelper.IsNVDecAvailable;
 
         public bool UseQSVDecodeForNonQSVEnc
         {
@@ -1049,7 +1151,7 @@ namespace HandBrakeWPF.ViewModels
             }
         }
 
-        public bool CanSetQsvDecForOtherEncodes => this.EnableQuickSyncDecoding && this.IsQuickSyncAvailable && this.EnableQuickSyncEncoding;
+        public bool CanSetQsvDecForOtherEncodes => this.EnableQuickSyncDecoding && this.IsQuickSyncAvailable;
 
         public BindingList<VideoScaler> ScalingOptions { get; } = new BindingList<VideoScaler>(EnumHelper<VideoScaler>.GetEnumList().ToList());
 
@@ -1060,6 +1162,8 @@ namespace HandBrakeWPF.ViewModels
         public bool IsHardwareOptionsVisible => !IsSafeMode && !IsHardwareFallbackMode;
 
         public bool IsAutomaticSafeMode { get; private set; }
+
+        public bool IsARMDevice => SystemInfo.IsArmDevice;
 
         public bool EnableNvDecSupport
         {
@@ -1093,7 +1197,19 @@ namespace HandBrakeWPF.ViewModels
             {
                 this.updateAvailable = value;
                 this.NotifyOfPropertyChange(() => this.UpdateAvailable);
+                this.NotifyOfPropertyChange(() => this.IsPortableModeUpdateAvailable);
+                this.NotifyOfPropertyChange(() => this.DownloadAvailable);
             }
+        }
+
+        public bool DownloadAvailable
+        {
+            get => !Portable.IsPortable() && UpdateAvailable;
+        }
+
+        public bool IsPortableModeUpdateAvailable
+        {
+            get => Portable.IsPortable() && UpdateAvailable;
         }
 
         public int DownloadProgressPercentage
@@ -1194,6 +1310,29 @@ namespace HandBrakeWPF.ViewModels
                 this.SendFileTo = Path.GetFileNameWithoutExtension(dialog.FileName);
                 this.sendFileToPath = dialog.FileName;
             }
+        }
+
+        public void BrowseQueueDoneAction()
+        {
+            OpenFileDialog dialog = new OpenFileDialog { Filter = "All files (*.*)|*.*", FileName = this.sendFileToPath };
+            bool? dialogResult = dialog.ShowDialog();
+            if (dialogResult.HasValue && dialogResult.Value)
+            {
+                this.QueueDoneAction = Path.GetFileNameWithoutExtension(dialog.FileName);
+                this.QueueDoneActionFullPath = dialog.FileName;
+            }
+        }
+
+        public void ClearQueueDoneAction()
+        {
+            this.QueueDoneAction = null;
+            this.QueueDoneActionFullPath = null;
+        }
+
+        public void ClearSendFileToAction()
+        {
+            this.SendFileTo = null;
+            this.SendFileToPath = null;
         }
 
         public void BrowseAutoNamePath()
@@ -1393,7 +1532,11 @@ namespace HandBrakeWPF.ViewModels
             this.PlaySoundWhenQueueDone = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.PlaySoundWhenQueueDone);
             this.SendSystemNotificationOnEncodeDone = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.NotifyOnEncodeDone);
             this.SendSystemNotificationOnQueueDone = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.NotifyOnQueueDone);
-
+            this.QueueDoneCustomActionEnabled = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.QueueDoneCustomActionEnabled);
+            this.QueueDoneAction = Path.GetFileNameWithoutExtension(this.userSettingService.GetUserSetting<string>(UserSettingConstants.QueueDoneAction)) ?? string.Empty;
+            this.QueueDoneActionFullPath = this.userSettingService.GetUserSetting<string>(UserSettingConstants.QueueDoneAction) ?? string.Empty;
+            this.QueueDoneArguments = this.userSettingService.GetUserSetting<string>(UserSettingConstants.QueueDoneArguments);
+            
             // #############################
             // Output Settings
             // #############################
@@ -1450,11 +1593,8 @@ namespace HandBrakeWPF.ViewModels
             this.UseQSVDecodeForNonQSVEnc = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.UseQSVDecodeForNonQSVEnc);
             this.EnableQuickSyncLowPower = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.EnableQuickSyncLowPower);
             this.EnableQuickSyncHyperEncode = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.EnableQuickSyncHyperEncode);
-
-            this.EnableQuickSyncEncoding = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.EnableQuickSyncEncoding);
-            this.EnableVceEncoder = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.EnableVceEncoder);
-            this.EnableNvencEncoder = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.EnableNvencEncoder);
             this.EnableNvDecSupport = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.EnableNvDecSupport);
+            this.EnableDirectXDecoding = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.EnableDirectXDecoding);
 
             // #############################
             // Process
@@ -1513,6 +1653,8 @@ namespace HandBrakeWPF.ViewModels
             this.PreviewPicturesToScan.Add(60);
             this.SelectedPreviewCount = this.userSettingService.GetUserSetting<int>(UserSettingConstants.PreviewScanCount);
 
+            this.KeepDuplicateTitles = this.userSettingService.GetUserSetting<bool>(UserSettingConstants.KeepDuplicateTitles);
+
             // x264 step
             this.ConstantQualityGranularity.Clear();
             this.ConstantQualityGranularity.Add("1.00");
@@ -1522,6 +1664,11 @@ namespace HandBrakeWPF.ViewModels
 
             // Min Title Length
             this.MinLength = this.userSettingService.GetUserSetting<int>(UserSettingConstants.MinScanDuration);
+            this.MaxLength = this.userSettingService.GetUserSetting<int>(UserSettingConstants.MaxScanDuration);
+            if (this.MaxLength > 0)
+            {
+                this.MaxDurationEnabled = true;
+            }
 
             // Use dvdnav
             this.DisableLibdvdNav = userSettingService.GetUserSetting<bool>(UserSettingConstants.DisableLibDvdNav);
@@ -1532,11 +1679,41 @@ namespace HandBrakeWPF.ViewModels
             this.ExcludedFileExtensions = new BindingList<string>(userSettingService.GetUserSetting<List<string>>(UserSettingConstants.ExcludedExtensions));
             this.RecursiveFolderScan = userSettingService.GetUserSetting<bool>(UserSettingConstants.RecursiveFolderScan);
 
+            this.SelectedDefaultRangeMode = userSettingService.GetUserSetting<DefaultRangeMode>(UserSettingConstants.DefaultRangeMode);
+
             // #############################
             // Safe Mode
             // #############################
             this.IsAutomaticSafeMode = userSettingService.GetUserSetting<bool>(UserSettingConstants.ForceDisableHardwareSupport);
             this.NotifyOfPropertyChange(() => this.IsAutomaticSafeMode);
+
+
+            // Warnings
+            ThreadPool.QueueUserWorkItem(
+                delegate
+                {
+                    try
+                    {
+                        GpuInfo info = SystemInfo.GetGPUInfo.FirstOrDefault(s => s.IsIntel);
+                        if (info != null)
+                        {
+                            this.DisplayIntelDriverWarning = !info.IsIntelDriverSupported;
+                        }
+
+                        info = SystemInfo.GetGPUInfo.FirstOrDefault(s => s.IsNvidia);
+                        if (info != null)
+                        {
+                            this.DisplayNvidiaDriverWarning = !info.IsNvidiaDriverSupported;
+                        }
+
+                        this.NotifyOfPropertyChange(() => this.DisplayIntelDriverWarning);
+                        this.NotifyOfPropertyChange(() => this.DisplayNvidiaDriverWarning);
+                    }
+                    catch (Exception exc)
+                    {
+                        // Nothing to do. Just don't display the warnings.
+                    }
+                });
         }
 
         public void UpdateSettings()
@@ -1599,9 +1776,6 @@ namespace HandBrakeWPF.ViewModels
             /* General */
             this.userSettingService.SetUserSetting(UserSettingConstants.UpdateStatus, this.CheckForUpdates);
             this.userSettingService.SetUserSetting(UserSettingConstants.DaysBetweenUpdateCheck, this.CheckForUpdatesFrequency);
-            this.userSettingService.SetUserSetting(UserSettingConstants.SendFileTo, this.SendFileToPath);
-            this.userSettingService.SetUserSetting(UserSettingConstants.SendFile, this.SendFileAfterEncode);
-            this.userSettingService.SetUserSetting(UserSettingConstants.SendFileToArgs, this.Arguments);
             this.userSettingService.SetUserSetting(UserSettingConstants.ShowStatusInTitleBar, this.ShowStatusInTitleBar);
             this.userSettingService.SetUserSetting(UserSettingConstants.ShowPreviewOnSummaryTab, this.ShowPreviewOnSummaryTab);
             this.userSettingService.SetUserSetting(UserSettingConstants.DarkThemeMode, this.DarkThemeMode);
@@ -1621,6 +1795,12 @@ namespace HandBrakeWPF.ViewModels
             this.userSettingService.SetUserSetting(UserSettingConstants.WhenDoneAudioFile, this.WhenDoneAudioFileFullPath);
             this.userSettingService.SetUserSetting(UserSettingConstants.NotifyOnEncodeDone, this.SendSystemNotificationOnEncodeDone);
             this.userSettingService.SetUserSetting(UserSettingConstants.NotifyOnQueueDone, this.SendSystemNotificationOnQueueDone);
+            this.userSettingService.SetUserSetting(UserSettingConstants.SendFileTo, this.SendFileToPath);
+            this.userSettingService.SetUserSetting(UserSettingConstants.SendFile, this.SendFileAfterEncode);
+            this.userSettingService.SetUserSetting(UserSettingConstants.SendFileToArgs, this.Arguments);
+            this.userSettingService.SetUserSetting(UserSettingConstants.QueueDoneCustomActionEnabled, this.QueueDoneCustomActionEnabled);
+            this.userSettingService.SetUserSetting(UserSettingConstants.QueueDoneAction, this.QueueDoneActionFullPath);
+            this.userSettingService.SetUserSetting(UserSettingConstants.QueueDoneArguments, this.QueueDoneArguments);
 
             /* Output Files */
             this.userSettingService.SetUserSetting(UserSettingConstants.AutoNaming, this.AutomaticallyNameFiles);
@@ -1644,10 +1824,8 @@ namespace HandBrakeWPF.ViewModels
             this.userSettingService.SetUserSetting(UserSettingConstants.ScalingMode, this.SelectedScalingMode);
             this.userSettingService.SetUserSetting(UserSettingConstants.UseQSVDecodeForNonQSVEnc, this.UseQSVDecodeForNonQSVEnc);
             this.userSettingService.SetUserSetting(UserSettingConstants.EnableQuickSyncHyperEncode, this.EnableQuickSyncHyperEncode);
-            this.userSettingService.SetUserSetting(UserSettingConstants.EnableQuickSyncEncoding, this.EnableQuickSyncEncoding);
-            this.userSettingService.SetUserSetting(UserSettingConstants.EnableVceEncoder, this.EnableVceEncoder);
-            this.userSettingService.SetUserSetting(UserSettingConstants.EnableNvencEncoder, this.EnableNvencEncoder);
             this.userSettingService.SetUserSetting(UserSettingConstants.EnableNvDecSupport, this.EnableNvDecSupport);
+            this.userSettingService.SetUserSetting(UserSettingConstants.EnableDirectXDecoding, this.EnableDirectXDecoding);
             this.userSettingService.SetUserSetting(UserSettingConstants.EnableQuickSyncLowPower, this.EnableQuickSyncLowPower);
 
             /* System and Logging */
@@ -1665,6 +1843,7 @@ namespace HandBrakeWPF.ViewModels
             this.userSettingService.SetUserSetting(UserSettingConstants.MainWindowMinimize, this.MinimiseToTray);
             this.userSettingService.SetUserSetting(UserSettingConstants.ClearCompletedFromQueue, this.ClearQueueOnEncodeCompleted);
             this.userSettingService.SetUserSetting(UserSettingConstants.PreviewScanCount, this.SelectedPreviewCount);
+            this.userSettingService.SetUserSetting(UserSettingConstants.KeepDuplicateTitles, this.KeepDuplicateTitles);
             this.userSettingService.SetUserSetting(UserSettingConstants.X264Step, double.Parse(this.SelectedGranularity, CultureInfo.InvariantCulture));
             this.userSettingService.SetUserSetting(UserSettingConstants.ExcludedExtensions, new List<string>(this.ExcludedFileExtensions));
             this.userSettingService.SetUserSetting(UserSettingConstants.RecursiveFolderScan, this.RecursiveFolderScan);
@@ -1675,6 +1854,12 @@ namespace HandBrakeWPF.ViewModels
                 this.userSettingService.SetUserSetting(UserSettingConstants.MinScanDuration, value);
             }
 
+            int maxValue;
+            if (int.TryParse(this.MaxLength.ToString(CultureInfo.InvariantCulture), out maxValue))
+            {
+                this.userSettingService.SetUserSetting(UserSettingConstants.MaxScanDuration, maxValue);
+            }
+
             this.userSettingService.SetUserSetting(UserSettingConstants.DisableLibDvdNav, this.DisableLibdvdNav);
 
             this.userSettingService.SetUserSetting(UserSettingConstants.PauseEncodingOnLowBattery, this.PauseOnLowBattery);
@@ -1683,6 +1868,7 @@ namespace HandBrakeWPF.ViewModels
             this.userSettingService.SetUserSetting(UserSettingConstants.ProcessIsolationEnabled, this.RemoteServiceEnabled);
             this.userSettingService.SetUserSetting(UserSettingConstants.ProcessIsolationPort, this.RemoteServicePort);
             this.userSettingService.SetUserSetting(UserSettingConstants.SimultaneousEncodes, this.SimultaneousEncodes);
+            this.userSettingService.SetUserSetting(UserSettingConstants.DefaultRangeMode, this.SelectedDefaultRangeMode);
         }
 
         public void LaunchHelp()
@@ -1696,11 +1882,6 @@ namespace HandBrakeWPF.ViewModels
             if (info.NewVersionAvailable)
             {
                 this.UpdateMessage = Resources.OptionsViewModel_NewUpdate;
-                this.UpdateAvailable = true;
-            }
-            else if (Environment.Is64BitOperatingSystem && !System.Environment.Is64BitProcess)
-            {
-                this.UpdateMessage = Resources.OptionsViewModel_64bitAvailable;
                 this.UpdateAvailable = true;
             }
             else

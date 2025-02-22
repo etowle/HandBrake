@@ -36,6 +36,7 @@ namespace HandBrake.Interop.Interop
 
         private JsonState lastProgressJson;
         private readonly object progressJsonLockObj = new object();
+        private EncodeProgressEventArgs lastEncodeProgress = null;
 
         /// <summary>
         /// Finalizes an instance of the HandBrakeInstance class.
@@ -134,6 +135,9 @@ namespace HandBrake.Interop.Interop
         /// <param name="minDuration">
         /// The minimum duration of a title to show up on the scan.
         /// </param>
+        /// <param name="maxDuration">
+        /// The maximum duration of a title to show up on the scan.
+        /// </param>
         /// <param name="titleIndex">
         /// The title index to scan (1-based, 0 for all titles).
         /// </param>
@@ -145,7 +149,7 @@ namespace HandBrake.Interop.Interop
         /// <param name="hwDecode">
         /// Hardware decoding during scans.
         /// </param>
-        public void StartScan(List<string> paths, int previewCount, TimeSpan minDuration, int titleIndex, List<string> excludedExtensions, int hwDecode)
+        public void StartScan(List<string> paths, int previewCount, TimeSpan minDuration, TimeSpan maxDuration, int titleIndex, List<string> excludedExtensions, int hwDecode, bool keepDuplicateTitles)
         {
             this.PreviewCount = previewCount;
 
@@ -169,7 +173,7 @@ namespace HandBrake.Interop.Interop
 
             // Start the Scan
             IntPtr excludedExtensionsPtr = excludedExtensionsNative?.Ptr ?? IntPtr.Zero;
-            HBFunctions.hb_scan_list(this.Handle, scanPathsList.Ptr, titleIndex, previewCount, 1, (ulong)(minDuration.TotalSeconds * 90000), 0, 0, excludedExtensionsPtr, hwDecode);
+            HBFunctions.hb_scan(this.Handle, scanPathsList.Ptr, titleIndex, previewCount, 1, (ulong)(minDuration.TotalSeconds * 90000), (ulong)(maxDuration.TotalSeconds * 90000), 0, 0, excludedExtensionsPtr, hwDecode, Convert.ToInt32(keepDuplicateTitles));
 
             this.scanPollTimer = new Timer();
             this.scanPollTimer.Interval = ScanPollIntervalMs;
@@ -263,6 +267,7 @@ namespace HandBrake.Interop.Interop
 
             this.encodePollTimer = new Timer();
             this.encodePollTimer.Interval = EncodePollIntervalMs;
+            this.lastEncodeProgress = null;
 
             this.encodePollTimer.Elapsed += (o, e) =>
             {
@@ -502,7 +507,11 @@ namespace HandBrake.Interop.Interop
                         progressEventArgs = new EncodeProgressEventArgs(state.Working.Progress, state.Working.Rate, state.Working.RateAvg, eta, state.Working.PassID, state.Working.Pass, state.Working.PassCount, taskState.Code);
                     }
 
-                    this.EncodeProgress(this, progressEventArgs);
+                    if (!ProgressIsEqual(progressEventArgs, this.lastEncodeProgress))
+                    {
+                        this.EncodeProgress(this, progressEventArgs);
+                        this.lastEncodeProgress = progressEventArgs;
+                    }
                 }
             }
             else if (taskState != null && taskState == TaskState.WorkDone)
@@ -516,6 +525,29 @@ namespace HandBrake.Interop.Interop
                         new EncodeCompletedEventArgs(state.WorkDone.Error));
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns true if the two progress events are equal. Used to throttle unnecessary progress events.
+        /// </summary>
+        /// <param name="a">The first progress event.</param>
+        /// <param name="b">The second progress event.</param>
+        /// <returns>True if the progress events are equal.</returns>
+        private static bool ProgressIsEqual(EncodeProgressEventArgs a, EncodeProgressEventArgs b)
+        {
+            if (a == null || b == null)
+            {
+                return false;
+            }
+
+            return a.FractionComplete == b.FractionComplete &&
+                   a.CurrentFrameRate == b.CurrentFrameRate &&
+                   a.AverageFrameRate == b.AverageFrameRate &&
+                   a.EstimatedTimeLeft == b.EstimatedTimeLeft &&
+                   a.PassId == b.PassId &&
+                   a.Pass == b.Pass &&
+                   a.PassCount == b.PassCount &&
+                   a.StateCode == b.StateCode;
         }
     }
 }

@@ -1,7 +1,7 @@
 /* unsharp_vt.m
 
    Copyright (c) 2002 Rémi Guyomarch <rguyom at pobox.com>
-   Copyright (c) 2003-2024 HandBrake Team
+   Copyright (c) 2003-2025 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -136,6 +136,7 @@ static int unsharp_vt_init(hb_filter_object_t *filter,
     pv->mtl = hb_metal_context_init(hb_unsharp_vt_metallib_data,
                                     hb_unsharp_vt_metallib_len,
                                     function_name,
+                                    NULL,
                                     sizeof(struct mtl_unsharp_params),
                                     init->geometry.width, init->geometry.height,
                                     init->pix_fmt, init->color_range);
@@ -324,14 +325,14 @@ static hb_buffer_t * filter_frame(hb_filter_private_t *pv, hb_buffer_t *in)
         }
 
         int channels;
-        const MTLPixelFormat format = hb_metal_pix_fmt_from_component(comp, &channels);
+        const MTLPixelFormat format = hb_metal_pix_fmt_from_component(comp, 0, &channels);
         if (format == MTLPixelFormatInvalid)
         {
             goto fail;
         }
 
-        CVMetalTextureRef src  = hb_metal_create_texture_from_pixbuf(pv->mtl->cache, cv_src, i, format);
-        CVMetalTextureRef dest = hb_metal_create_texture_from_pixbuf(pv->mtl->cache, cv_dest, i, format);
+        CVMetalTextureRef src  = hb_metal_create_texture_from_pixbuf(pv->mtl->cache, cv_src, i, channels, format);
+        CVMetalTextureRef dest = hb_metal_create_texture_from_pixbuf(pv->mtl->cache, cv_dest, i, channels, format);
 
         id<MTLTexture> tex_src  = CVMetalTextureGetTexture(src);
         id<MTLTexture> tex_dest = CVMetalTextureGetTexture(dest);
@@ -342,7 +343,9 @@ static hb_buffer_t * filter_frame(hb_filter_private_t *pv, hb_buffer_t *in)
         CFRelease(dest);
     }
 
+#if defined(HB_VT_PROPAGATE_ATTACHMENTS)
     CVBufferPropagateAttachments(cv_src, cv_dest);
+#endif
 
     out = hb_buffer_wrapper_init();
     out->storage_type = COREMEDIA;

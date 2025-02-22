@@ -1,6 +1,6 @@
 /* internal.h
 
-   Copyright (c) 2003-2024 HandBrake Team
+   Copyright (c) 2003-2025 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -190,6 +190,7 @@ void          hb_video_buffer_realloc( hb_buffer_t * b, int w, int h );
 void          hb_buffer_reduce( hb_buffer_t * b, int size );
 void          hb_buffer_close( hb_buffer_t ** );
 hb_buffer_t * hb_buffer_dup( const hb_buffer_t * src );
+hb_buffer_t * hb_buffer_shallow_dup( const hb_buffer_t *src );
 int           hb_buffer_copy( hb_buffer_t * dst, const hb_buffer_t * src );
 void          hb_buffer_swap_copy( hb_buffer_t *src, hb_buffer_t *dst );
 hb_image_t  * hb_image_init(int pix_fmt, int width, int height);
@@ -206,6 +207,8 @@ void          hb_buffer_wipe_side_data(hb_buffer_t *buf);
 void          hb_buffer_copy_side_data(hb_buffer_t *dst, const hb_buffer_t *src);
 
 void          hb_buffer_copy_props(hb_buffer_t *dst, const hb_buffer_t *src);
+
+int           hb_buffer_is_writable(const hb_buffer_t *buf);
 
 hb_fifo_t   * hb_fifo_init( int capacity, int thresh );
 void          hb_fifo_register_full_cond( hb_fifo_t * f, hb_cond_t * c );
@@ -267,9 +270,9 @@ static inline int hb_image_height(int pix_fmt, int height, int plane)
 hb_thread_t * hb_scan_init( hb_handle_t *, volatile int * die,
                             hb_list_t * paths, int title_index,
                             hb_title_set_t * title_set, int preview_count,
-                            int store_previews, uint64_t min_duration,
+                            int store_previews, uint64_t min_duration, uint64_t max_duration,
                             int crop_auto_switch_threshold, int crop_median_threshold,
-                            hb_list_t * exclude_extensions, int hw_decode);
+                            hb_list_t * exclude_extensions, int hw_decode, int keep_duplicate_titles);
 hb_thread_t * hb_work_init( hb_list_t * jobs,
                             volatile int * die, hb_error_code * error, hb_job_t ** job );
 void ReadLoop( void * _w );
@@ -326,7 +329,7 @@ typedef struct hb_stream_s hb_stream_t;
 
 hb_dvd_t *   hb_dvd_init( hb_handle_t * h, const char * path );
 int          hb_dvd_title_count( hb_dvd_t * );
-hb_title_t * hb_dvd_title_scan( hb_dvd_t *, int title, uint64_t min_duration );
+hb_title_t * hb_dvd_title_scan( hb_dvd_t *, int title, uint64_t min_duration, uint64_t max_duration );
 int          hb_dvd_start( hb_dvd_t *, hb_title_t *title, int chapter );
 void         hb_dvd_stop( hb_dvd_t * );
 int          hb_dvd_seek( hb_dvd_t *, float );
@@ -338,9 +341,9 @@ int          hb_dvd_angle_count( hb_dvd_t * d );
 void         hb_dvd_set_angle( hb_dvd_t * d, int angle );
 int          hb_dvd_main_feature( hb_dvd_t * d, hb_list_t * list_title );
 
-hb_bd_t     * hb_bd_init( hb_handle_t *h, const char * path );
+hb_bd_t     * hb_bd_init( hb_handle_t *h, const char * path, int keep_duplicate_titles );
 int           hb_bd_title_count( hb_bd_t * d );
-hb_title_t  * hb_bd_title_scan( hb_bd_t * d, int t, uint64_t min_duration );
+hb_title_t  * hb_bd_title_scan( hb_bd_t * d, int t, uint64_t min_duration, uint64_t max_duration );
 int           hb_bd_start( hb_bd_t * d, hb_title_t *title );
 void          hb_bd_stop( hb_bd_t * d );
 int           hb_bd_seek( hb_bd_t * d, float f );
@@ -460,10 +463,13 @@ extern hb_filter_object_t hb_filter_unsharp_vt;
 #endif
 
 extern hb_motion_metric_object_t hb_motion_metric;
+extern hb_blend_object_t hb_blend;
 
 #if defined(__APPLE__)
 extern hb_motion_metric_object_t hb_motion_metric_vt;
+extern hb_blend_object_t hb_blend_vt;
 #endif
+
 
 extern hb_work_object_t * hb_objects;
 

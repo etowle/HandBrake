@@ -1,6 +1,6 @@
 /* hbffmpeg.h
 
-   Copyright (c) 2003-2024 HandBrake Team
+   Copyright (c) 2003-2025 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -62,8 +62,7 @@ static const char* const hb_vce_preset_names[] = { "speed", "balanced", "quality
 
 void            hb_video_buffer_to_avframe(AVFrame *frame, hb_buffer_t **buf);
 hb_buffer_t   * hb_avframe_to_video_buffer(AVFrame *frame,
-                                           AVRational time_base,
-                                           int zero_copy);
+                                           AVRational time_base);
 void            hb_avframe_set_video_buffer_flags(hb_buffer_t * buf,
                                            AVFrame *frame,
                                            AVRational time_base);

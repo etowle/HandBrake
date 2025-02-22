@@ -23,7 +23,6 @@ namespace HandBrakeWPF.Services.Presets.Factories
     using HandBrake.Interop.Interop.Interfaces.Model.Picture;
     using HandBrake.Interop.Interop.Interfaces.Model.Presets;
     using HandBrake.Interop.Interop.Json.Presets;
-    using HandBrake.Interop.Utilities;
 
     using HandBrakeWPF.Model.Audio;
     using HandBrakeWPF.Model.Filters;
@@ -60,7 +59,7 @@ namespace HandBrakeWPF.Services.Presets.Factories
             preset.Task.IPod5GSupport = importedPreset.Mp4iPodCompatible;
             preset.Task.OutputFormat = GetFileFormat(importedPreset.FileFormat.Replace("file", string.Empty).Trim());
             preset.Task.AlignAVStart = importedPreset.AlignAVStart;
-            preset.Task.PassthruMetadataEnabled = importedPreset.MetadataPassthrough;
+            preset.Task.PassthruMetadataEnabled = importedPreset.MetadataPassthru;
 
             /* Picture Settings */
             preset.Task.MaxWidth = importedPreset.PictureWidth.HasValue && importedPreset.PictureWidth.Value > 0 ? importedPreset.PictureWidth.Value : (int?)null;
@@ -280,10 +279,27 @@ namespace HandBrakeWPF.Services.Presets.Factories
             }
 
             /* Video Settings */
-            preset.Task.VideoEncoder = HandBrakeEncoderHelpers.VideoEncoders.FirstOrDefault(s => s.ShortName == importedPreset.VideoEncoder);
+            preset.Task.VideoEncoder = HandBrakeEncoderHelpers.VideoEncoders.FirstOrDefault(s => s.ShortName == importedPreset.VideoEncoder) ?? new HBVideoEncoder(0, importedPreset.VideoEncoder, 0, importedPreset.VideoEncoder);
             preset.Task.VideoBitrate = importedPreset.VideoAvgBitrate;
             preset.Task.MultiPass = importedPreset.VideoMultiPass;
             preset.Task.TurboAnalysisPass = importedPreset.VideoTurboMultiPass;
+
+            switch (importedPreset.VideoPasshtruHDRDynamicMetadata)
+            {
+                case "none":
+                    preset.Task.PasshtruHDRDynamicMetadata = HDRDynamicMetadata.None;
+                    break;
+                case "hdr10plus":
+                    preset.Task.PasshtruHDRDynamicMetadata = HDRDynamicMetadata.HDR10Plus;
+                    break;
+                case "dolbyvision":
+                    preset.Task.PasshtruHDRDynamicMetadata = HDRDynamicMetadata.DolbyVision;
+                    break;
+                default:
+                    preset.Task.PasshtruHDRDynamicMetadata = HDRDynamicMetadata.All;
+                    break;
+            }
+
             preset.Task.ExtraAdvancedArguments = importedPreset.VideoOptionExtra;
             preset.Task.Quality = double.Parse(importedPreset.VideoQualitySlider.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
             preset.Task.VideoEncodeRateType = (VideoEncodeRateType)importedPreset.VideoQualityType;
@@ -502,7 +518,7 @@ namespace HandBrakeWPF.Services.Presets.Factories
 
             // Audio
             preset.AudioCopyMask = export.AudioTrackBehaviours.AllowedPassthruOptions.Select(s => s.ShortName).ToList();
-            preset.AudioEncoderFallback = export.AudioTrackBehaviours.AudioFallbackEncoder.ShortName;
+            preset.AudioEncoderFallback = export.AudioTrackBehaviours.AudioFallbackEncoder?.ShortName;
             preset.AudioLanguageList = HandBrakeLanguagesHelper.GetLanguageCodes(export.AudioTrackBehaviours.SelectedLanguages);
             preset.AudioTrackSelectionBehavior = EnumHelper<AudioBehaviourModes>.GetShortName(export.AudioTrackBehaviours.SelectedBehaviour);
             preset.AudioSecondaryEncoderMode = export.AudioTrackBehaviours.SelectedTrackDefaultBehaviour == AudioTrackDefaultsMode.FirstTrack; // 1 = First Track, 0 = All
@@ -544,7 +560,7 @@ namespace HandBrakeWPF.Services.Presets.Factories
             preset.Optimize = export.Task.Optimize;
             preset.Mp4iPodCompatible = export.Task.IPod5GSupport;
             preset.AlignAVStart = export.Task.AlignAVStart;
-            preset.MetadataPassthrough = export.Task.PassthruMetadataEnabled;
+            preset.MetadataPassthru = export.Task.PassthruMetadataEnabled;
 
             // Picture Settings
             preset.PictureForceHeight = 0; // TODO
@@ -629,6 +645,7 @@ namespace HandBrakeWPF.Services.Presets.Factories
             preset.VideoColorMatrixCode = 0; // TODO not supported.
             preset.VideoTurboMultiPass = export.Task.TurboAnalysisPass;
             preset.VideoMultiPass = export.Task.MultiPass;
+            preset.VideoPasshtruHDRDynamicMetadata = "all"; // TODO EnumHelper<HDRDynamicMetadata>.GetShortName(export.Task.PasshtruHDRDynamicMetadata);
 
             // Unknown
             preset.ChildrenArray = new List<object>(); 

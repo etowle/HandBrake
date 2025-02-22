@@ -22,18 +22,15 @@
 
 @import HandBrakeKit;
 @import QuickLookUI;
+@import UserNotifications;
 
-@interface HBQueueController () <NSToolbarItemValidation, NSMenuItemValidation, NSUserNotificationCenterDelegate, HBQueueTableViewControllerDelegate, HBQueueDetailsViewControllerDelegate>
+@interface HBQueueController () <NSToolbarItemValidation, NSMenuItemValidation, NSUserNotificationCenterDelegate, UNUserNotificationCenterDelegate, HBQueueTableViewControllerDelegate, HBQueueDetailsViewControllerDelegate>
 
 @property (nonatomic) NSSplitViewController *splitViewController;
 @property (nonatomic) HBQueueTableViewController *tableViewController;
 @property (nonatomic) NSViewController *containerViewController;
 @property (nonatomic) HBQueueInfoViewController *infoViewController;
 @property (nonatomic) HBQueueMultiSelectionViewController *multiSelectionViewController;
-
-/// Whether the window is visible or occluded,
-/// useful to avoid updating the UI needlessly
-@property (nonatomic) BOOL visible;
 
 @property (nonatomic) HBQueueToolbarDelegate *toolbarDelegate;
 
@@ -59,9 +56,30 @@
     if (self = [super initWithWindowNibName:@"Queue"])
     {
         _queue = queue;
-        _sendQueue = dispatch_queue_create("fr.handbrake.SendToQueue", DISPATCH_QUEUE_SERIAL);
+        _sendQueue = dispatch_queue_create("fr.handbrake.SendToQueue",
+                                           dispatch_queue_attr_make_with_autorelease_frequency(DISPATCH_QUEUE_SERIAL,
+                                                                                               DISPATCH_AUTORELEASE_FREQUENCY_WORK_ITEM));
 
-        NSUserNotificationCenter.defaultUserNotificationCenter.delegate = self;
+        if (@available(macOS 10.14, *))
+        {
+            UNUserNotificationCenter *center = UNUserNotificationCenter.currentNotificationCenter;
+            center.delegate = self;
+
+            UNNotificationAction *action = [UNNotificationAction actionWithIdentifier:HBQueueItemNotificationShowAction
+                                                                                title:NSLocalizedString(@"Show", @"Notification -> Show in Finder")
+                                                                              options:UNNotificationActionOptionForeground];
+            UNNotificationCategory *category = [UNNotificationCategory categoryWithIdentifier:HBQueueItemNotificationShowCategory
+                                                                                      actions:@[action]
+                                                                            intentIdentifiers:@[]
+                                                                                      options:0];
+            [center setNotificationCategories:[NSSet setWithObject:category]];
+            [center requestAuthorizationWithOptions:UNAuthorizationOptionSound | UNAuthorizationOptionAlert
+                                  completionHandler:^(BOOL granted, NSError * _Nullable error) {}];
+        }
+        else
+        {
+            NSUserNotificationCenter.defaultUserNotificationCenter.delegate = self;
+        }
 
         [NSNotificationCenter.defaultCenter addObserverForName:HBQueueLowSpaceAlertNotification object:_queue queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification * _Nonnull note) {
             [self queueLowDiskSpaceAlert];
@@ -267,11 +285,6 @@
     return [self validateUserIterfaceItemForAction:theItem.action];
 }
 
-- (void)windowDidChangeOcclusionState:(NSNotification *)notification
-{
-    self.visible = self.window.occlusionState & NSWindowOcclusionStateVisible ? YES : NO;
-}
-
 #pragma mark - Private queue editing methods
 
 /**
@@ -398,11 +411,11 @@
 #pragma mark - Encode Done Actions
 
 NSString * const HBQueueItemNotificationPathKey = @"HBQueueItemNotificationPathKey";
+NSString * const HBQueueItemNotificationShowAction = @"HBQueueItemNotificationShowAction";
+NSString * const HBQueueItemNotificationShowCategory = @"HBQueueItemNotificationShowCategory";
 
-- (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
+- (void)showInFinder:(NSString *)path
 {
-    // Show the file in Finder when a done notification was clicked.
-    NSString *path = notification.userInfo[HBQueueItemNotificationPathKey];
     if ([path isKindOfClass:[NSString class]] && path.length)
     {
         NSURL *fileURL = [NSURL fileURLWithPath:path];
@@ -410,20 +423,60 @@ NSString * const HBQueueItemNotificationPathKey = @"HBQueueItemNotificationPathK
     }
 }
 
+- (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
+{
+    // Show the file in Finder when a done notification is clicked
+    NSString *path = notification.userInfo[HBQueueItemNotificationPathKey];
+    [self showInFinder:path];
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)(void))completionHandler API_AVAILABLE(macos(10.14))
+{
+    NSString *path = response.notification.request.content.userInfo[HBQueueItemNotificationPathKey];
+    [self showInFinder:path];
+    completionHandler();
+}
+
 - (void)showNotificationWithTitle:(NSString *)title description:(NSString *)description url:(NSURL *)fileURL playSound:(BOOL)playSound
 {
-    NSUserNotification *notification = [[NSUserNotification alloc] init];
-    notification.title = title;
-    notification.informativeText = description;
-    notification.soundName = playSound ? NSUserNotificationDefaultSoundName : nil;
-    if (fileURL)
+    if (@available(macOS 10.14, *))
     {
-        notification.hasActionButton = YES;
-        notification.actionButtonTitle = NSLocalizedString(@"Show", @"Notification -> Show in Finder");
-        notification.userInfo = @{ HBQueueItemNotificationPathKey: fileURL.path };
-    }
+        UNMutableNotificationContent *notification = [[UNMutableNotificationContent alloc] init];
+        notification.title = title;
+        notification.body = description;
+        notification.sound = playSound ? UNNotificationSound.defaultSound : nil;
 
-    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+        if (fileURL)
+        {
+            notification.categoryIdentifier = HBQueueItemNotificationShowCategory;
+            notification.userInfo = @{ HBQueueItemNotificationPathKey: fileURL.path };
+        }
+
+        UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:[NSUUID UUID].UUIDString
+                                                                              content:notification
+                                                                              trigger:nil];
+        [UNUserNotificationCenter.currentNotificationCenter addNotificationRequest:request withCompletionHandler:NULL];
+    }
+    else
+    {
+        NSUserNotification *notification = [[NSUserNotification alloc] init];
+        notification.title = title;
+        notification.informativeText = description;
+        notification.soundName = playSound ? NSUserNotificationDefaultSoundName : nil;
+
+        if (fileURL)
+        {
+            notification.hasActionButton = YES;
+            notification.actionButtonTitle = NSLocalizedString(@"Show", @"Notification -> Show in Finder");
+            notification.userInfo = @{ HBQueueItemNotificationPathKey: fileURL.path };
+        }
+        else
+        {
+            notification.hasActionButton = NO;
+        }
+
+        [NSUserNotificationCenter.defaultUserNotificationCenter deliverNotification:notification];
+    }
 }
 
 /**

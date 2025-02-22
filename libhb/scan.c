@@ -1,6 +1,6 @@
 /* scan.c
 
-   Copyright (c) 2003-2024 HandBrake Team
+   Copyright (c) 2003-2025 HandBrake Team
    This file is part of the HandBrake source code
    Homepage: <http://handbrake.fr/>.
    It may be used under the terms of the GNU General Public License v2.
@@ -29,6 +29,8 @@ typedef struct
     int            store_previews;
 
     uint64_t       min_title_duration;
+    uint64_t       max_title_duration;
+    int            keep_duplicate_titles;
     
     int            crop_threshold_frames;
     int            crop_threshold_pixels;
@@ -51,11 +53,6 @@ static void UpdateState1(hb_scan_t *scan, int title);
 static void UpdateState2(hb_scan_t *scan, int title);
 static void UpdateState3(hb_scan_t *scan, int preview);
 
-static int get_color_prim(int color_primaries, hb_geometry_t geometry, hb_rational_t rate);
-static int get_color_transfer(int color_trc);
-static int get_color_matrix(int colorspace, hb_geometry_t geometry);
-static int get_color_range(int color_range);
-
 static const char *aspect_to_string(hb_rational_t *dar)
 {
     double aspect = (double)dar->num / dar->den;
@@ -70,140 +67,6 @@ static const char *aspect_to_string(hb_rational_t *dar)
     else
         snprintf(arstr, sizeof(arstr), "1:%.2f", 1. / aspect );
     return arstr;
-}
-
-static int get_color_prim(int color_primaries, hb_geometry_t geometry, hb_rational_t rate)
-{
-    switch (color_primaries)
-    {
-        case AVCOL_PRI_BT709:
-            return HB_COLR_PRI_BT709;
-        case AVCOL_PRI_BT470M:
-            return HB_COLR_PRI_BT470M;
-        case AVCOL_PRI_BT470BG:
-            return HB_COLR_PRI_EBUTECH;
-        case AVCOL_PRI_SMPTE170M:
-        case AVCOL_PRI_SMPTE240M:
-            return HB_COLR_PRI_SMPTEC;
-        case AVCOL_PRI_FILM:
-            return HB_COLR_PRI_FILM;
-        case AVCOL_PRI_SMPTE428:
-            return HB_COLR_PRI_SMPTE428;
-        case AVCOL_PRI_SMPTE431:
-            return HB_COLR_PRI_SMPTE431;
-        case AVCOL_PRI_SMPTE432:
-            return HB_COLR_PRI_SMPTE432;
-        case AVCOL_PRI_JEDEC_P22:
-            return HB_COLR_PRI_JEDEC_P22;
-        case AVCOL_PRI_BT2020:
-            return HB_COLR_PRI_BT2020;
-        default:
-        {
-            if ((geometry.width >= 1280 || geometry.height >= 720)||
-                (geometry.width >   720 && geometry.height >  576 ))
-                // ITU BT.709 HD content
-                return HB_COLR_PRI_BT709;
-            else if (rate.den == 1080000)
-                // ITU BT.601 DVD or SD TV content (PAL)
-                return HB_COLR_PRI_EBUTECH;
-            else
-                // ITU BT.601 DVD or SD TV content (NTSC)
-                return HB_COLR_PRI_SMPTEC;
-        }
-    }
-}
-
-static int get_color_transfer(int color_trc)
-{
-    switch (color_trc)
-    {
-        case AVCOL_TRC_GAMMA22:
-            return HB_COLR_TRA_GAMMA22;
-        case AVCOL_TRC_GAMMA28:
-            return HB_COLR_TRA_GAMMA28;
-        case AVCOL_TRC_SMPTE170M:
-            return HB_COLR_TRA_SMPTE170M;
-        case AVCOL_TRC_LINEAR:
-            return HB_COLR_TRA_LINEAR;
-        case AVCOL_TRC_LOG:
-            return HB_COLR_TRA_LOG;
-        case AVCOL_TRC_LOG_SQRT:
-            return HB_COLR_TRA_LOG_SQRT;
-        case AVCOL_TRC_IEC61966_2_4:
-            return HB_COLR_TRA_IEC61966_2_4;
-        case AVCOL_TRC_BT1361_ECG:
-            return HB_COLR_TRA_BT1361_ECG;
-        case AVCOL_TRC_IEC61966_2_1:
-            return HB_COLR_TRA_IEC61966_2_1;
-        case AVCOL_TRC_SMPTE240M:
-            return HB_COLR_TRA_SMPTE240M;
-        case AVCOL_TRC_SMPTEST2084:
-            return HB_COLR_TRA_SMPTEST2084;
-        case AVCOL_TRC_ARIB_STD_B67:
-            return HB_COLR_TRA_ARIB_STD_B67;
-        case AVCOL_TRC_BT2020_10:
-            return HB_COLR_TRA_BT2020_10;
-        case AVCOL_TRC_BT2020_12:
-            return HB_COLR_TRA_BT2020_12;
-        default:
-            // ITU BT.601, BT.709, anything else
-            return HB_COLR_TRA_BT709;
-    }
-}
-
-static int get_color_matrix(int colorspace, hb_geometry_t geometry)
-{
-    switch (colorspace)
-    {
-        case AVCOL_SPC_RGB:
-            return HB_COLR_MAT_RGB;
-        case AVCOL_SPC_BT709:
-            return HB_COLR_MAT_BT709;
-        case AVCOL_SPC_FCC:
-            return HB_COLR_MAT_FCC;
-        case AVCOL_SPC_BT470BG:
-            return HB_COLR_MAT_BT470BG;
-        case AVCOL_SPC_SMPTE170M:
-            return HB_COLR_MAT_SMPTE170M;
-        case AVCOL_SPC_SMPTE240M:
-            return HB_COLR_MAT_SMPTE240M;
-        case AVCOL_SPC_YCGCO:
-            return HB_COLR_MAT_YCGCO;
-        case AVCOL_SPC_BT2020_NCL:
-            return HB_COLR_MAT_BT2020_NCL;
-        case AVCOL_SPC_BT2020_CL:
-            return HB_COLR_MAT_BT2020_CL;
-        case AVCOL_SPC_CHROMA_DERIVED_NCL:
-            return HB_COLR_MAT_CD_NCL;
-        case AVCOL_SPC_CHROMA_DERIVED_CL:
-            return HB_COLR_MAT_CD_CL;
-        case AVCOL_SPC_ICTCP:
-            return HB_COLR_MAT_ICTCP;
-        default:
-        {
-            if ((geometry.width >= 1280 || geometry.height >= 720)||
-                (geometry.width >   720 && geometry.height >  576 ))
-                // ITU BT.709 HD content
-                return HB_COLR_MAT_BT709;
-            else
-                // ITU BT.601 DVD or SD TV content (PAL)
-                // ITU BT.601 DVD or SD TV content (NTSC)
-                return HB_COLR_MAT_SMPTE170M;
-        }
-    }
-}
-
-static int get_color_range(int color_range)
-{
-    switch (color_range)
-    {
-        case AVCOL_RANGE_MPEG:
-            return AVCOL_RANGE_MPEG;
-        case AVCOL_RANGE_JPEG:
-            return AVCOL_RANGE_JPEG;
-        default:
-            return AVCOL_RANGE_MPEG;
-    }
 }
 
 static const char * const known_file_types[] =
@@ -226,9 +89,10 @@ static int is_known_filetype(const char *filename)
 hb_thread_t * hb_scan_init( hb_handle_t * handle, volatile int * die,
                             hb_list_t *  paths, int title_index,
                             hb_title_set_t * title_set, int preview_count,
-                            int store_previews, uint64_t min_duration,
+                            int store_previews, uint64_t min_duration, uint64_t max_duration,
                             int crop_threshold_frames, int crop_threshold_pixels,
-                            hb_list_t * exclude_extensions, int hw_decode)
+                            hb_list_t * exclude_extensions, int hw_decode,
+                            int keep_duplicate_titles)
 {
     hb_scan_t * data = calloc( sizeof( hb_scan_t ), 1 );
 
@@ -241,11 +105,13 @@ hb_thread_t * hb_scan_init( hb_handle_t * handle, volatile int * die,
     data->preview_count  = preview_count;
     data->store_previews = store_previews;
     data->min_title_duration = min_duration;
-    
+    data->max_title_duration = max_duration;
+     
     data->crop_threshold_frames = crop_threshold_frames;
     data->crop_threshold_pixels = crop_threshold_pixels;
     data->exclude_extensions    = hb_string_list_copy(exclude_extensions);
     data->hw_decode             = hw_decode;
+    data->keep_duplicate_titles = keep_duplicate_titles;
     
     // Initialize scan state
     hb_state_t state;
@@ -281,7 +147,7 @@ static void ScanFunc( void * _data )
     }
         
     /* Try to open the path as a DVD. If it fails, try as a file */
-    if( single_path != NULL && !is_known_filetype(single_path) && ( data->bd = hb_bd_init( data->h, single_path ) ) )
+    if( single_path != NULL && !is_known_filetype(single_path) && ( data->bd = hb_bd_init( data->h, single_path, data->keep_duplicate_titles ) ) )
     {
         hb_log( "scan: BD has %d title(s)",
                 hb_bd_title_count( data->bd ) );
@@ -290,7 +156,7 @@ static void ScanFunc( void * _data )
             /* Scan this title only */
             hb_list_add( data->title_set->list_title,
                          hb_bd_title_scan( data->bd,
-                         data->title_index, 0 ) );
+                         data->title_index, 0, 0 ) );
         }
         else
         {
@@ -300,7 +166,7 @@ static void ScanFunc( void * _data )
                 UpdateState1(data, i + 1);
                 hb_list_add( data->title_set->list_title,
                              hb_bd_title_scan( data->bd,
-                             i + 1, data->min_title_duration ) );
+                             i + 1, data->min_title_duration, data->max_title_duration ) );
             }
             feature = hb_bd_main_feature( data->bd,
                                           data->title_set->list_title );
@@ -315,7 +181,7 @@ static void ScanFunc( void * _data )
             /* Scan this title only */
             hb_list_add( data->title_set->list_title,
                          hb_dvd_title_scan( data->dvd,
-                            data->title_index, 0 ) );
+                            data->title_index, 0, 0 ) );
         }
         else
         {
@@ -325,7 +191,7 @@ static void ScanFunc( void * _data )
                 UpdateState1(data, i + 1);
                 hb_list_add( data->title_set->list_title,
                              hb_dvd_title_scan( data->dvd,
-                            i + 1, data->min_title_duration ) );
+                            i + 1, data->min_title_duration, data->max_title_duration ) );
             }
             feature = hb_dvd_main_feature( data->dvd,
                                            data->title_set->list_title );
@@ -363,30 +229,6 @@ static void ScanFunc( void * _data )
             }
         }
     }
-    else if (hb_list_count(data->paths) > 1) // We have many file paths to process.
-    {
-        // If dragging a batch of files, maybe not, but if the UI's implement a recursive folder maybe?
-        for (i = 0; i < hb_list_count( data->paths ); i++)
-        {
-            if (*data->die)
-            {
-                goto finish;
-            }
-
-            single_path = hb_list_item(data->paths, i);
-
-            UpdateState1(data, i + 1);
-
-            if (hb_is_valid_batch_path(single_path))
-            {
-                title = hb_batch_title_scan_single(data->h, single_path, (int)i + 1);
-                if (title != NULL)
-                {
-                    hb_list_add(data->title_set->list_title, title);
-                }
-            }
-        }
-    }
     else if (single_path != NULL) // Single File.
     {
         // Title index 0 is not a valid title number and means scan all titles.
@@ -410,6 +252,30 @@ static void ScanFunc( void * _data )
             hb_title_close( &title );
             hb_log( "scan: unrecognized file type" );
             goto finish;
+        }
+    }
+    else // We have many file paths to process.
+    {
+        // If dragging a batch of files, maybe not, but if the UI's implement a recursive folder maybe?
+        for (i = 0; i < hb_list_count( data->paths ); i++)
+        {
+            if (*data->die)
+            {
+                goto finish;
+            }
+
+            char *path = hb_list_item(data->paths, i);
+
+            UpdateState1(data, i + 1);
+
+            if (hb_is_valid_batch_path(path))
+            {
+                title = hb_batch_title_scan_single(data->h, path, (int)i + 1);
+                if (title != NULL)
+                {
+                    hb_list_add(data->title_set->list_title, title);
+                }
+            }
         }
     }
 
@@ -814,14 +680,18 @@ static int DecodePreviews( hb_scan_t * data, hb_title_t * title, int flush )
         title->angle_count = hb_dvd_angle_count( data->dvd );
         hb_log( "scan: title angle(s) %d", title->angle_count );
     }
-    else if (data->batch)
+    else // data->batch or a single file
     {
         stream = hb_stream_open(data->h, title->path, title, 0);
     }
-    else 
+
+    if (data->bd == NULL && data->dvd == NULL && stream == NULL)
     {
-        // We have a batch of files.
-        stream = hb_stream_open(data->h, title->path, title, 0);
+        hb_error("Can't open stream!");
+        free(info_list);
+        crop_record_free(crops);
+        hb_stream_close(&stream);
+        return 0;
     }
 
     if (title->video_codec == WORK_NONE)
@@ -844,6 +714,11 @@ static int DecodePreviews( hb_scan_t * data, hb_title_t * title, int flush )
              hb_hwaccel_available(title->video_codec_param, "videotoolbox"))
     {
         hw_decode = HB_DECODE_SUPPORT_VIDEOTOOLBOX;
+    }
+    else if (data->hw_decode == HB_DECODE_SUPPORT_MF &&
+             hb_hwaccel_available(title->video_codec_param, "d3d11va"))
+    {
+        hw_decode = HB_DECODE_SUPPORT_MF;
     }
 
     void *hw_device_ctx = NULL;
@@ -1324,7 +1199,7 @@ skip_preview:
         // values could be read from the mpeg-2 bitstream. Override those here.
         if (data->dvd)
         {
-            title->color_prim     = get_color_prim(HB_COLR_PRI_UNSET, vid_info.geometry, vid_info.rate);
+            title->color_prim     = hb_get_color_prim(HB_COLR_PRI_UNSET, vid_info.geometry, vid_info.rate);
             title->color_transfer = HB_COLR_TRA_BT709;
             title->color_matrix   = HB_COLR_MAT_SMPTE170M;
         }
@@ -1335,9 +1210,9 @@ skip_preview:
                  (title->color_matrix   != HB_COLR_MAT_UNDEF &&
                   title->color_matrix != HB_COLR_MAT_UNSET))
         {
-            title->color_prim     = get_color_prim(title->color_prim, vid_info.geometry, vid_info.rate);
-            title->color_transfer = get_color_transfer(title->color_transfer);
-            title->color_matrix   = get_color_matrix(title->color_matrix, vid_info.geometry);
+            title->color_prim     = hb_get_color_prim(title->color_prim, vid_info.geometry, vid_info.rate);
+            title->color_transfer = hb_get_color_transfer(title->color_transfer);
+            title->color_matrix   = hb_get_color_matrix(title->color_matrix, vid_info.geometry);
         }
         else if (title->dovi.dv_profile == 5 ||
                  (title->dovi.dv_profile == 10 && title->dovi.dv_bl_signal_compatibility_id == 0))
@@ -1348,12 +1223,12 @@ skip_preview:
         }
         else
         {
-            title->color_prim     = get_color_prim(vid_info.color_prim, vid_info.geometry, vid_info.rate);
-            title->color_transfer = get_color_transfer(vid_info.color_transfer);
-            title->color_matrix   = get_color_matrix(vid_info.color_matrix, vid_info.geometry);
+            title->color_prim     = hb_get_color_prim(vid_info.color_prim, vid_info.geometry, vid_info.rate);
+            title->color_transfer = hb_get_color_transfer(vid_info.color_transfer);
+            title->color_matrix   = hb_get_color_matrix(vid_info.color_matrix, vid_info.geometry);
         }
 
-        title->color_range = get_color_range(vid_info.color_range);
+        title->color_range = hb_get_color_range(vid_info.color_range);
         title->chroma_location = vid_info.chroma_location;
 
         title->video_decode_support = vid_info.video_decode_support;
@@ -1652,6 +1527,41 @@ static void LookForAudio(hb_scan_t *scan, hb_title_t * title, hb_audio_t * audio
     audio->config.in.flags = info.flags;
     audio->config.in.mode = info.mode;
 
+    // Under some circumstances, ffmpeg fails to probe the DTS profile
+    // during it's initial scan of DTS audio tracks. The profile gets
+    // picked up during our more indepth scan here.
+    if (audio->config.in.codec == HB_ACODEC_FFMPEG)
+    {
+        switch (audio->config.in.codec_param)
+        {
+            case AV_CODEC_ID_DTS:
+            {
+                switch (info.profile)
+                {
+                    case AV_PROFILE_DTS:
+                    case AV_PROFILE_DTS_ES:
+                    case AV_PROFILE_DTS_96_24:
+                    case AV_PROFILE_DTS_EXPRESS:
+                        audio->config.in.codec = HB_ACODEC_DCA;
+                        break;
+
+                    case AV_PROFILE_DTS_HD_MA:
+                    case AV_PROFILE_DTS_HD_HRA:
+                    case AV_PROFILE_DTS_HD_MA_X:
+                    case AV_PROFILE_DTS_HD_MA_X_IMAX:
+                        audio->config.in.codec = HB_ACODEC_DCA_HD;
+                        break;
+
+                    default:
+                        break;
+                }
+            } break;
+
+            default:
+                break;
+        }
+    }
+
     // now that we have all the info, set the audio description
     const char *codec_name   = NULL;
     const char *profile_name = NULL;
@@ -1660,7 +1570,7 @@ static void LookForAudio(hb_scan_t *scan, hb_title_t * title, hb_audio_t * audio
         const AVCodec *codec = avcodec_find_decoder(audio->config.in.codec_param);
         if (codec != NULL)
         {
-            if (info.profile != FF_PROFILE_UNKNOWN)
+            if (info.profile != AV_PROFILE_UNKNOWN)
             {
                 profile_name = av_get_profile_name(codec, info.profile);
             }
@@ -1673,6 +1583,9 @@ static void LookForAudio(hb_scan_t *scan, hb_title_t * title, hb_audio_t * audio
                     break;
                 case AV_CODEC_ID_AC3:
                     codec_name = "AC3";
+                    break;
+                case AV_CODEC_ID_ALAC:
+                    codec_name = "ALAC";
                     break;
                 case AV_CODEC_ID_EAC3:
                     codec_name = "E-AC3";
@@ -1725,6 +1638,9 @@ static void LookForAudio(hb_scan_t *scan, hb_title_t * title, hb_audio_t * audio
                 case HB_ACODEC_FFEAC3:
                     codec_name = "E-AC3";
                     break;
+                case HB_ACODEC_FFALAC:
+                    codec_name = "ALAC";
+                    break;
                 case HB_ACODEC_FFTRUEHD:
                     codec_name = "TrueHD";
                     break;
@@ -1745,6 +1661,9 @@ static void LookForAudio(hb_scan_t *scan, hb_title_t * title, hb_audio_t * audio
                     break;
                 case HB_ACODEC_MP3:
                     codec_name = "MP3";
+                    break;
+                case AV_CODEC_ID_VORBIS:
+                    codec_name = "Vorbis";
                     break;
                 default:
                     codec_name = "Unknown (libav)";
